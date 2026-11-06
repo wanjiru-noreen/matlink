@@ -1,0 +1,489 @@
+# MatLink Development Roadmap
+
+## 1. Introduction
+
+### 1.1 Purpose
+
+This document outlines the planned development phases, milestones, deliverables, and priorities for building MatLink.
+
+It provides a structured approach to moving the project from initial planning to deployment and continuous improvement.
+
+### 1.2 Project Vision
+
+To build a reliable public transport navigation platform that helps passengers navigate towns using matatus with clear route instructions, stage discovery, fare estimates, and journey guidance.
+
+---
+
+## 2. Development Approach
+
+MatLink will be developed incrementally.
+
+Each phase should produce a working and testable part of the application before the next major phase begins.
+
+The proposed development approach includes:
+
+- Requirements analysis.
+- System architecture and database design.
+- UI/UX design.
+- Backend development.
+- Mobile application development.
+- Integration and testing.
+- Deployment.
+- Maintenance and improvement.
+
+---
+
+## 3. Phase 1: Project Foundation
+
+**Goal:** Establish the technical foundation of MatLink.
+
+### Tasks
+
+1. Finalise initial project requirements.
+2. Review the proposed system architecture.
+3. Finalise the initial technology stack.
+4. Establish the GitHub repository structure.
+5. Configure development environments.
+6. Establish coding conventions.
+7. Set up version control and branching strategy.
+8. Configure basic CI workflows.
+
+### Deliverables
+
+- Approved project documentation.
+- Repository structure.
+- Development environment.
+- Initial CI configuration.
+- Agreed technology stack.
+
+---
+
+## 4. Phase 2: UI/UX Design
+
+**Goal:** Design the passenger experience before implementation.
+
+### Tasks
+
+1. Conduct user research.
+2. Analyse existing public transport applications.
+3. Create user personas.
+4. Map the main passenger journey.
+5. Establish information architecture.
+6. Create low-fidelity wireframes.
+7. Design high-fidelity interfaces.
+8. Build an interactive prototype.
+9. Conduct usability testing.
+10. Refine the designs based on feedback.
+
+### Deliverables
+
+- User research findings.
+- User personas.
+- User journey maps.
+- Wireframes.
+- High-fidelity designs.
+- Interactive prototype.
+- Design system.
+- Developer handoff specifications.
+
+---
+
+## 5. Phase 3: Database and Backend Foundation
+
+**Goal:** Build the backend infrastructure and core data structures.
+
+### Tasks
+
+1. Set up the Go backend.
+2. Configure PostgreSQL.
+3. Enable PostGIS for geographic data.
+4. Design and implement database migrations.
+5. Implement database connections.
+6. Establish repository and service layers.
+7. Configure API routing.
+8. Implement request validation.
+9. Establish error handling.
+10. Configure logging and testing.
+
+### Deliverables
+
+- Working Go backend.
+- PostgreSQL database.
+- Initial database schema.
+- Migration system.
+- API foundation.
+- Backend testing setup.
+
+---
+
+## 6. Phase 4: Core Data Management
+
+**Goal:** Establish the transport and geographic information required by MatLink.
+
+### Tasks
+
+1. Implement town management.
+2. Implement place management.
+3. Implement matatu stage management.
+4. Implement matatu route management.
+5. Associate routes with their serving stages.
+6. Establish stage ordering along routes.
+7. Implement fare management.
+8. Implement data submission and verification.
+9. Establish data validation procedures.
+
+### Deliverables
+
+- Town records.
+- Place records.
+- Matatu stage records.
+- Matatu route records.
+- Route-stage relationships.
+- Fare records.
+- Data management endpoints.
+
+**Important consideration:** Reliable and regularly updated stage, route, and fare information is essential. Data collection and verification should begin early rather than being postponed until the application is complete.
+
+---
+
+## 7. Phase 5: Authentication and User Management
+
+**Goal:** Support user accounts and secure access to account-based features.
+
+### Tasks
+
+1. Implement user registration.
+2. Implement login and logout.
+3. Implement authentication.
+4. Implement user profile management.
+5. Establish role-based access where required.
+6. Implement secure session or token management.
+7. Implement account-related validation.
+
+### Deliverables
+
+- Authentication endpoints.
+- User management functionality.
+- Protected API endpoints.
+- Account-related tests.
+
+Guest access to basic route discovery should remain a consideration so passengers are not forced to register just to find a matatu.
+
+---
+
+## 8. Phase 6: Location and Destination Services
+
+**Goal:** Allow users to identify their starting location and destination.
+
+### Tasks
+
+1. Integrate GPS location services.
+2. Implement automatic location detection.
+3. Implement manual location selection.
+4. Integrate a mapping service.
+5. Implement destination search.
+6. Implement place suggestions.
+7. Support selecting locations directly on the map.
+8. Implement nearby stage discovery.
+9. Implement geographic search using PostGIS.
+
+### Deliverables
+
+- Location services.
+- Destination search.
+- Map integration.
+- Nearby stage discovery.
+- Manual location selection.
+
+---
+
+## 9. Phase 7: Route Planning Engine
+
+**Goal:** Develop the system responsible for identifying suitable matatu journeys.
+
+### Tasks
+
+1. Model stages as graph nodes.
+2. Model matatu connections as graph edges.
+3. Represent walking connections between relevant locations.
+4. Implement direct route discovery.
+5. Implement multi-matatu route discovery.
+6. Identify transfer stages.
+7. Calculate walking distances.
+8. Estimate walking and travel times.
+9. Calculate fare estimates.
+10. Rank and return suitable journey options.
+11. Handle cases where no route is available.
+
+### Deliverables
+
+- Route planning service.
+- Direct journey support.
+- Multi-matatu journey support.
+- Transfer identification.
+- Walking connection calculations.
+- Fare estimation.
+- Route results API.
+
+The route planning engine is one of MatLink's most important technical components. It should be tested independently before being integrated into the mobile application.
+
+---
+
+## 10. Phase 8: Mobile Application Development
+
+**Goal:** Build the passenger-facing mobile application.
+
+### Tasks
+
+1. Set up the Flutter project.
+2. Establish the application structure.
+3. Implement the design system.
+4. Implement the welcome and home screens.
+5. Implement location selection.
+6. Implement destination search.
+7. Implement map views.
+8. Implement nearby stage discovery.
+9. Implement route results.
+10. Implement journey details.
+11. Implement active journey navigation.
+12. Implement journey completion.
+13. Integrate backend APIs.
+14. Handle loading, empty, and error states.
+
+### Deliverables
+
+- Flutter mobile application.
+- Passenger-facing screens.
+- Map and location integration.
+- Backend API integration.
+- Core navigation experience.
+
+---
+
+## 11. Phase 9: Journey Tracking and Notifications
+
+**Goal:** Help passengers follow their journeys and receive relevant updates.
+
+### Tasks
+
+1. Implement journey creation.
+2. Implement journey progress updates.
+3. Track the passenger's location during an active journey, with permission.
+4. Identify progress towards the next stage.
+5. Implement alighting alerts where supported.
+6. Implement transfer notifications.
+7. Implement journey completion.
+8. Integrate push notifications.
+9. Handle interruptions and lost connections.
+
+### Deliverables
+
+- Journey tracking functionality.
+- Journey progress management.
+- Alighting alerts.
+- Transfer notifications.
+- Journey completion functionality.
+
+---
+
+## 12. Phase 10: Saved Places and Additional Features
+
+**Goal:** Improve convenience and expand the passenger experience.
+
+### Tasks
+
+1. Implement saved places.
+2. Implement recent searches.
+3. Implement alternative route suggestions.
+4. Improve route comparison.
+5. Improve journey history.
+6. Add notification preferences.
+7. Introduce cached information where practical.
+
+### Deliverables
+
+- Saved places functionality.
+- Recent search history.
+- Alternative routes.
+- Improved passenger experience.
+
+---
+
+## 13. Phase 11: Testing and Quality Assurance
+
+**Goal:** Verify that MatLink works reliably and meets its requirements.
+
+### Testing activities
+
+**Unit testing**
+- Test individual functions and services.
+
+**Integration testing**
+- Test interactions between backend modules, database, and external services.
+
+**API testing**
+- Verify API requests, responses, validation, and error handling.
+
+**Mobile application testing**
+- Test navigation, screens, forms, and map interactions.
+
+**Route planning testing**
+- Test direct routes, transfers, walking connections, and fare calculations.
+
+**Usability testing**
+- Evaluate whether passengers can complete journeys without unnecessary confusion.
+
+**Performance testing**
+- Evaluate response times and system behaviour under load.
+
+**Security testing**
+- Review authentication, authorisation, data protection, and API security.
+
+### Deliverables
+
+- Automated test suites.
+- Test reports.
+- Bug reports.
+- Resolved critical issues.
+- Release readiness assessment.
+
+---
+
+## 14. Phase 12: Deployment and Launch
+
+**Goal:** Make MatLink available to its intended users.
+
+### Tasks
+
+1. Prepare production infrastructure.
+2. Configure production PostgreSQL and PostGIS.
+3. Configure environment variables and secrets.
+4. Containerise application services where appropriate.
+5. Configure CI/CD pipelines.
+6. Deploy the backend.
+7. Configure monitoring and logging.
+8. Prepare mobile release builds.
+9. Conduct final production testing.
+10. Release the application to an initial group of users.
+
+### Deliverables
+
+- Production backend.
+- Production database.
+- Deployment configuration.
+- Mobile release builds.
+- Initial user release.
+
+---
+
+## 15. Phase 13: Monitoring and Continuous Improvement
+
+**Goal:** Improve MatLink based on actual usage and feedback.
+
+### Tasks
+
+1. Monitor application performance.
+2. Monitor API availability.
+3. Track errors and failures.
+4. Collect passenger feedback.
+5. Review route and fare accuracy.
+6. Update transport data.
+7. Identify usability problems.
+8. Prioritise improvements.
+9. Release updates regularly.
+
+### Deliverables
+
+- Monitoring reports.
+- Updated transport data.
+- Bug fixes.
+- Improved application releases.
+
+---
+
+## 16. MVP Development Priorities
+
+The first release should focus on the core passenger journey.
+
+| Feature | Priority |
+|---|---|
+| Automatic GPS location | Must have |
+| Manual starting location | Must have |
+| Destination search | Must have |
+| Map-based location selection | Must have |
+| Nearby stage discovery | Must have |
+| Direct route planning | Must have |
+| Multi-matatu route planning | Must have |
+| Boarding stage guidance | Must have |
+| Alighting stage guidance | Must have |
+| Walking directions | Must have |
+| Fare estimates | Must have |
+| Travel time estimates | Must have |
+| Basic journey tracking | Must have |
+| Saved places | Later release |
+| Advanced notifications | Later release |
+| Alternative route comparison | Later release |
+| Offline route planning | Future consideration |
+
+---
+
+## 17. Key Project Risks
+
+| Risk | Potential Impact | Mitigation |
+|---|---|---|
+| Inaccurate transport data | Incorrect journey recommendations | Establish data verification procedures |
+| Outdated fares | Misleading fare estimates | Maintain fare records and update history |
+| GPS inaccuracies | Incorrect location guidance | Support manual location adjustment |
+| Network interruptions | Disrupted navigation | Cache appropriate information |
+| Complex route planning | Incorrect transfers or routes | Test the routing engine independently |
+| Limited mapping data | Incomplete walking directions | Evaluate mapping providers and available data |
+| Scope expansion | Delayed development | Prioritise MVP requirements |
+
+---
+
+## 18. Proposed Development Milestones
+
+| Milestone | Expected Outcome |
+|---|---|
+| M1: Planning Complete | Core documentation and requirements established |
+| M2: Design Complete | Wireframes, high-fidelity designs, and prototype ready |
+| M3: Backend Foundation | Go backend and database operational |
+| M4: Transport Data Ready | Towns, places, stages, routes, and fares manageable |
+| M5: Route Planning Ready | Direct and multi-matatu journeys supported |
+| M6: Mobile MVP Ready | Passenger application integrated with backend |
+| M7: Testing Complete | Critical issues resolved |
+| M8: Initial Launch | MatLink available to initial users |
+
+Specific dates and durations will be established after the project scope, team capacity, and technical dependencies are confirmed.
+
+---
+
+## 19. Future Development Opportunities
+
+Potential future improvements include:
+
+- Expansion to additional towns.
+- Community-supported transport data updates.
+- More accurate fare information.
+- Real-time traffic integration.
+- Live matatu location information where reliable data sources exist.
+- Offline access to selected route information.
+- Multiple language support.
+- Accessibility improvements.
+- Transport operator partnerships.
+- Advanced route recommendations.
+- Usage analytics and reporting.
+
+These opportunities should be evaluated based on user needs, data availability, cost, and technical feasibility.
+
+---
+
+## 20. Conclusion
+
+The MatLink development roadmap provides a phased approach to building a public transport navigation platform.
+
+Development should prioritise reliable transport data, accurate route planning, and a simple passenger experience.
+
+The initial release should solve the central problem effectively: helping passengers identify where to board, which matatu to take, where to transfer, where to alight, and how to reach their destination.
+
+Future releases can expand the platform based on real-world usage and feedback.

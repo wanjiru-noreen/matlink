@@ -1,0 +1,487 @@
+# MatLink UI/UX Design
+
+## 1. Introduction
+
+### 1.1 Purpose
+
+This document defines the user interface and user experience design guidelines for MatLink.
+
+It describes the visual structure, navigation, screens, interactions, and usability principles that will guide the design and development of the application.
+
+### 1.2 Design Goals
+
+MatLink's design should:
+
+1. Make public transport navigation simple.
+2. Help passengers identify the correct boarding and alighting stages.
+3. Make route information easy to understand.
+4. Display fare estimates clearly.
+5. Provide clear walking and transfer instructions.
+6. Reduce confusion for passengers unfamiliar with a town.
+7. Maintain consistency across the application.
+
+---
+
+## 2. Design Principles
+
+### 2.1 Simplicity
+
+The interface should avoid unnecessary complexity. Users should be able to plan a journey without navigating through too many screens.
+
+### 2.2 Clarity
+
+Important information such as destination, boarding stage, alighting stage, and fare should be easy to identify.
+
+### 2.3 Consistency
+
+Buttons, icons, typography, colours, and navigation patterns should remain consistent throughout the application.
+
+### 2.4 Accessibility
+
+The application should use readable text, sufficient colour contrast, clear icons, and appropriately sized interactive elements.
+
+### 2.5 User Control
+
+Users should be able to adjust their starting location, change destinations, review alternative routes, and return to previous steps easily.
+
+### 2.6 Feedback
+
+The application should communicate loading states, successful actions, errors, and changes in journey information.
+
+---
+
+## 3. Target Platforms
+
+The initial application will target:
+
+- Android smartphones.
+- iOS smartphones.
+
+The interface should adapt to different screen sizes and resolutions.
+
+---
+
+## 4. Navigation Structure
+
+MatLink should use a simple navigation structure.
+
+### Main Navigation
+
+Proposed navigation items:
+
+1. **Home:** Starting point for journey planning.
+2. **Explore:** Discover nearby matatu stages and places.
+3. **My Journeys:** View active and previous journeys.
+4. **Saved Places:** Access frequently visited locations.
+5. **Profile:** Manage account and application preferences.
+
+Some sections, such as saved places and user profiles, may be introduced in later releases.
+
+---
+
+## 5. Main Application Screens
+
+### 5.1 Splash Screen
+
+**Purpose:** Introduce the application during startup.
+
+Elements:
+- MatLink logo.
+- Application name.
+- Simple loading indicator.
+
+### 5.2 Welcome Screen
+
+**Purpose:** Explain the application's value to first-time users.
+
+Elements:
+- Short introduction.
+- Brief explanation of MatLink.
+- Continue button.
+- Optional onboarding illustrations.
+
+### 5.3 Home Screen
+
+**Purpose:** Allow users to begin planning a journey.
+
+Elements:
+- Current location.
+- Starting location field.
+- Destination search field.
+- Map preview.
+- Nearby stages.
+- Recent or saved destinations, where available.
+- Main route-planning button.
+
+The home screen should make the starting location and destination the most prominent elements.
+
+### 5.4 Location Selection Screen
+
+**Purpose:** Allow users to select or adjust their starting location.
+
+Elements:
+- Interactive map.
+- Current GPS location.
+- Search field.
+- Map location marker.
+- Confirm location button.
+
+### 5.5 Destination Search Screen
+
+**Purpose:** Help users find their destination.
+
+Elements:
+- Search input.
+- Search suggestions.
+- Recent searches.
+- Place names and location descriptions.
+- Map selection option.
+
+### 5.6 Nearby Stages Screen
+
+**Purpose:** Display matatu stages around the user's location.
+
+Elements:
+- Interactive map.
+- Nearby stage markers.
+- Stage list.
+- Search option.
+- Stage details.
+
+Selecting a stage should display its available routes and relevant fare information.
+
+### 5.7 Route Results Screen
+
+**Purpose:** Present suitable journey options.
+
+Each route card should display:
+
+- Starting stage.
+- Destination stage.
+- Number of matatus required.
+- Number of transfers.
+- Estimated fare.
+- Estimated travel time.
+- Walking time.
+- Walking distance.
+
+Users should be able to select a route to view its full details.
+
+### 5.8 Journey Details Screen
+
+**Purpose:** Explain the selected journey before travel begins.
+
+Elements:
+- Route overview.
+- Map representation.
+- Walking segments.
+- Boarding stage.
+- Matatu route details.
+- Transfer instructions.
+- Alighting stage.
+- Fare breakdown.
+- Estimated journey duration.
+- Start journey button.
+
+### 5.9 Active Journey Screen
+
+**Purpose:** Guide passengers while travelling.
+
+Elements:
+- Current location.
+- Route map.
+- Current journey instruction.
+- Next stage.
+- Expected alighting point.
+- Journey progress.
+- Transfer instructions where applicable.
+
+The most important instruction should remain prominent.
+
+### 5.10 Journey Completion Screen
+
+**Purpose:** Confirm that the passenger has reached the destination.
+
+Elements:
+- Journey completion message.
+- Destination details.
+- Journey summary.
+- Total estimated fare.
+- Total journey duration.
+
+### 5.11 My Journeys Screen
+
+**Purpose:** Allow users to review previous and active journeys.
+
+Elements:
+- Active journey.
+- Journey history.
+- Starting locations.
+- Destinations.
+- Journey dates.
+- Journey details.
+
+### 5.12 Saved Places Screen
+
+**Purpose:** Provide quick access to frequently visited locations.
+
+Elements:
+- List of saved places.
+- Place names.
+- Location descriptions.
+- Edit and delete actions.
+- Option to plan a journey to a saved place.
+
+### 5.13 Profile Screen
+
+**Purpose:** Allow users to manage their account and preferences.
+
+Elements:
+- User information.
+- Account settings.
+- Location preferences.
+- Notification preferences.
+- Privacy settings.
+- Logout option.
+
+---
+
+## 6. Route Visualization
+
+Route visualization is one of MatLink's most important design components.
+
+The interface should visually distinguish between:
+
+- Walking to the first boarding stage.
+- Travelling by matatu.
+- Walking between transfer stages.
+- Travelling on subsequent matatu routes.
+- Walking from the final stage to the destination.
+
+Each journey segment should have a clear label and corresponding map representation.
+
+The design should not rely on colour alone to communicate journey types. Icons and text labels should also be used.
+
+---
+
+## 7. Journey Information Hierarchy
+
+During route planning, information should be prioritised as follows:
+
+1. Destination and starting location.
+2. Boarding stage.
+3. Matatu route.
+4. Alighting stage.
+5. Transfer instructions.
+6. Fare estimate.
+7. Travel and walking time.
+
+During an active journey, the next required action should receive the greatest visual emphasis.
+
+---
+
+## 8. Interaction Design
+
+The application should support:
+
+- Search and autocomplete.
+- Map movement and location selection.
+- Tap interactions for stages and places.
+- Expandable route details.
+- Route selection.
+- Journey progress updates.
+- Confirmation messages.
+- Clear error messages.
+- Location permission prompts.
+- Notification interactions.
+
+Important actions should provide immediate visual feedback.
+
+---
+
+## 9. Visual Design System
+
+The following design elements should be established during the high-fidelity design phase.
+
+### 9.1 Colour Palette
+
+A consistent colour palette should be selected to communicate MatLink's identity.
+
+The palette should include:
+
+- Primary colour.
+- Secondary colour.
+- Background colours.
+- Surface colours.
+- Primary and secondary text colours.
+- Success colour.
+- Warning colour.
+- Error colour.
+- Map route colours.
+
+Final colour values will be determined during visual design.
+
+### 9.2 Typography
+
+Typography should prioritise readability.
+
+The design system should define:
+
+- Heading styles.
+- Body text.
+- Labels.
+- Buttons.
+- Supporting text.
+- Numerical information such as fares and travel times.
+
+### 9.3 Icons
+
+Icons should be simple, recognisable, and consistent.
+
+Important icons include:
+
+- Current location.
+- Destination.
+- Matatu stage.
+- Walking.
+- Matatu transport.
+- Transfer.
+- Navigation.
+- Notifications.
+- Saved places.
+- Profile.
+
+### 9.4 Components
+
+Reusable interface components should include:
+
+- Buttons.
+- Search fields.
+- Input fields.
+- Route cards.
+- Stage cards.
+- Bottom navigation.
+- Information panels.
+- Map markers.
+- Status indicators.
+- Dialogues and alerts.
+
+---
+
+## 10. Map and Navigation Design
+
+The map should support the passenger rather than overwhelm them.
+
+Design considerations:
+
+1. Clearly display the user's current location.
+2. Make boarding and alighting stages distinguishable.
+3. Display the destination.
+4. Show walking paths.
+5. Show matatu route segments.
+6. Highlight transfer points.
+7. Allow users to zoom and move around the map.
+8. Keep important journey instructions visible.
+
+Map information should be supported by written directions so users do not have to interpret the map alone.
+
+---
+
+## 11. Loading, Empty, and Error States
+
+The application should provide clear feedback when information is unavailable.
+
+Examples include:
+
+- Finding your location.
+- Searching for destinations.
+- Finding available routes.
+- No nearby stages found.
+- No suitable routes found.
+- Internet connection unavailable.
+- Location permission required.
+- Fare information unavailable.
+- Journey information could not be updated.
+
+Messages should explain the situation and provide a useful next action where possible.
+
+---
+
+## 12. Accessibility Considerations
+
+MatLink should:
+
+- Use readable font sizes.
+- Maintain sufficient colour contrast.
+- Provide descriptive labels for icons.
+- Avoid relying only on colour.
+- Support screen readers.
+- Use sufficiently large touch targets.
+- Present instructions in simple language.
+- Keep important information visible.
+
+---
+
+## 13. UX Research and Validation
+
+Before finalising the interface, the design should be evaluated with potential users.
+
+Research activities may include:
+
+- User interviews.
+- Understanding existing matatu travel experiences.
+- Competitor interface analysis.
+- User journey mapping.
+- Wireframing.
+- Prototype testing.
+- Usability testing.
+- Gathering user feedback.
+
+Testing should focus on whether users can successfully:
+
+1. Set their starting location.
+2. Find a destination.
+3. Identify the correct boarding stage.
+4. Understand fare estimates.
+5. Follow a multi-matatu journey.
+6. Identify where to alight.
+7. Reach their final destination.
+
+---
+
+## 14. Design Deliverables
+
+The UI/UX design process should produce:
+
+1. User research findings.
+2. User personas.
+3. User journey maps.
+4. Information architecture.
+5. Low-fidelity wireframes.
+6. High-fidelity screen designs.
+7. Interactive prototypes.
+8. Design system.
+9. Usability testing findings.
+10. Developer handoff specifications.
+
+---
+
+## 15. Design Tools
+
+Proposed tools:
+
+- **Figma:** Wireframes, interface design, prototypes, and design systems.
+- **FigJam:** User flows, brainstorming, and journey mapping.
+- **Flutter:** Implementation of the mobile interface.
+
+The final toolset may change as the project develops.
+
+---
+
+## 16. Conclusion
+
+MatLink's interface should make public transport navigation understandable, predictable, and accessible.
+
+The design should prioritise the passenger's immediate needs: knowing where to go, which matatu to board, how much the journey may cost, and where to alight.
+
+Every screen and interaction should contribute to making the passenger's journey easier.

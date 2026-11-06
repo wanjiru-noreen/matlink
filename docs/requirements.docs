@@ -1,0 +1,746 @@
+# MatLink
+# Software Requirements Specification (SRS)
+
+**Document Version:** 1.0  
+**Project:** MatLink  
+**Document Status:** Initial Specification
+
+---
+
+# 1. Introduction
+
+## 1.1 Purpose
+
+This document defines the functional and non-functional requirements of MatLink.
+
+It establishes the system's expected behaviour, capabilities, limitations, and quality standards. It will serve as a reference for developers, designers, testers, project contributors, and other stakeholders throughout development.
+
+## 1.2 Project Overview
+
+MatLink is a public transport navigation platform designed to help passengers navigate towns using matatus.
+
+The platform enables passengers to identify suitable matatu stages, discover routes to their destinations, estimate fares and travel times, navigate transfers, and receive guidance on where to alight.
+
+MatLink aims to make public transport navigation easier, especially for people unfamiliar with a town or its transport network.
+
+## 1.3 Problem Statement
+
+Navigating unfamiliar towns using matatus can be challenging.
+
+Passengers may struggle to:
+
+- Identify the nearest matatu stage.
+- Determine which stage they should board from.
+- Find the correct matatu route.
+- Understand journeys involving multiple matatus.
+- Estimate the total cost of a journey.
+- Know where to alight.
+- Find their way from the final stage to their destination.
+
+Passengers often depend on asking strangers, conductors, or other passengers for directions and fare information.
+
+This can lead to confusion, unnecessary walking, missed stages, unexpected expenses, and longer journeys.
+
+MatLink aims to address these challenges by providing accessible, step-by-step public transport navigation.
+
+## 1.4 Proposed Solution
+
+MatLink will provide a navigation experience that combines location services, destination discovery, matatu route information, stage information, fare estimates, and journey guidance.
+
+A passenger should be able to enter a destination and receive clear instructions covering the entire journey, from their current location to their final destination.
+
+## 1.5 Project Objectives
+
+The objectives of MatLink are to:
+
+1. Simplify navigation using matatus.
+2. Help passengers discover nearby matatu stages.
+3. Identify suitable boarding and alighting stages.
+4. Provide route recommendations based on the passenger's destination.
+5. Support journeys involving multiple matatus.
+6. Provide estimated fares and travel times.
+7. Reduce uncertainty when navigating unfamiliar towns.
+8. Provide clear walking directions between locations and stages.
+9. Improve access to public transport information.
+10. Establish a platform that can expand to support additional towns.
+
+## 1.6 Scope
+
+MatLink will initially focus on matatu-based public transport navigation within towns.
+
+The platform will cover:
+
+- Passenger location detection.
+- Manual location selection.
+- Destination discovery.
+- Matatu stage discovery.
+- Public transport route planning.
+- Multi-stage and multi-matatu journeys.
+- Fare estimation.
+- Walking navigation.
+- Journey tracking.
+- Alighting guidance.
+- Journey notifications.
+- Saved places.
+
+The platform will initially depend on available and verified transport data rather than assuming that every matatu is equipped with live tracking technology.
+
+---
+
+# 2. Stakeholders and User Classes
+
+## 2.1 Primary Stakeholders
+
+### Passengers
+
+People who use matatus to travel within towns and need assistance identifying routes, stages, fares, and destinations.
+
+### System Administrators
+
+People responsible for managing the platform, maintaining transport information, verifying submitted data, and monitoring system operations.
+
+### Transport Data Contributors
+
+Authorized individuals responsible for providing or updating information about matatu stages, routes, and fares.
+
+### Development Team
+
+People responsible for designing, implementing, testing, deploying, and maintaining MatLink.
+
+## 2.2 User Classes
+
+### 2.2.1 Regular Commuters
+
+People who frequently use matatus and want to identify efficient routes, compare fares, and reduce travel uncertainty.
+
+### 2.2.2 Newcomers
+
+People who have recently moved to a town and are unfamiliar with its transport network.
+
+### 2.2.3 Students
+
+Students who need assistance navigating between their homes, institutions, and other destinations.
+
+### 2.2.4 Visitors and Tourists
+
+People visiting a town who may not understand its matatu routes, stages, or transport system.
+
+### 2.2.5 Occasional Passengers
+
+People who use public transport occasionally and may need guidance when travelling to unfamiliar destinations.
+
+---
+
+# 3. System Overview
+
+## 3.1 System Description
+
+MatLink will operate as a mobile-first public transport navigation platform.
+
+Passengers will interact with the mobile application to discover routes and navigate journeys.
+
+The system will retrieve relevant transport information from its backend services and database.
+
+The platform will use location and mapping services to support location detection, distance calculations, and walking directions.
+
+## 3.2 General System Workflow
+
+A typical journey will follow this process:
+
+1. The passenger opens MatLink.
+2. The system identifies their current location using GPS, subject to permission.
+3. Alternatively, the passenger manually selects their starting location.
+4. The passenger searches for a destination or selects it on a map.
+5. MatLink identifies suitable public transport routes.
+6. The system identifies the appropriate boarding stage.
+7. The passenger receives walking directions to that stage.
+8. MatLink displays the recommended matatu route and estimated fare.
+9. The passenger boards the matatu.
+10. MatLink guides the passenger towards the correct alighting stage.
+11. If a transfer is required, the system provides directions to the next stage.
+12. The process continues until the passenger reaches the final alighting stage.
+13. MatLink provides walking directions to the destination.
+14. The journey is marked as completed.
+
+## 3.3 Operating Environment
+
+The proposed operating environment includes:
+
+- Android mobile devices.
+- iOS mobile devices.
+- GPS-enabled devices.
+- Internet connectivity for online services.
+- Mapping and geolocation services.
+- Backend application services.
+- A centralized database.
+
+The platform should accommodate different screen sizes and device capabilities.
+
+---
+
+# 4. Functional Requirements
+
+Functional requirements describe what MatLink must do.
+
+## 4.1 User and Account Management
+
+**FR-001:** The system shall allow users to create accounts.
+
+**FR-002:** The system shall allow registered users to log in and log out.
+
+**FR-003:** The system shall allow users to manage their profile information.
+
+**FR-004:** The system shall securely manage user authentication.
+
+**FR-005:** The system shall allow users to access basic journey-planning functionality without requiring an account, where feasible.
+
+**FR-006:** The system shall allow users to manage their account settings.
+
+## 4.2 Location Management
+
+**FR-007:** The system shall request permission to access the device's location.
+
+**FR-008:** The system shall automatically identify the passenger's current location using GPS when permission is granted.
+
+**FR-009:** The system shall allow passengers to manually enter or select their starting location.
+
+**FR-010:** The system shall allow passengers to adjust their selected starting location.
+
+**FR-011:** The system shall display the passenger's location on a map.
+
+**FR-012:** The system shall update the passenger's location during an active journey when location access is available.
+
+**FR-013:** The system shall communicate when location information is unavailable or inaccurate.
+
+## 4.3 Destination Search
+
+**FR-014:** The system shall allow passengers to search for destinations using place names.
+
+**FR-015:** The system shall provide destination suggestions during searches.
+
+**FR-016:** The system shall allow passengers to select destinations directly from a map.
+
+**FR-017:** The system shall display relevant information about selected destinations.
+
+**FR-018:** The system shall validate destination selections before route planning.
+
+**FR-019:** The system shall allow users to select a different destination when needed.
+
+## 4.4 Nearby Stage Discovery
+
+**FR-020:** The system shall identify matatu stages near the passenger's current or manually selected location.
+
+**FR-021:** The system shall display nearby stages on a map.
+
+**FR-022:** The system shall provide the names and available details of identified stages.
+
+**FR-023:** The system shall display walking distances to nearby stages.
+
+**FR-024:** The system shall provide estimated walking times to nearby stages.
+
+**FR-025:** The system shall identify stages that serve routes relevant to the passenger's destination.
+
+## 4.5 Route Planning
+
+**FR-026:** The system shall generate suitable matatu journey options between a selected starting location and destination.
+
+**FR-027:** The system shall identify the recommended boarding stage.
+
+**FR-028:** The system shall identify the matatu route the passenger should take.
+
+**FR-029:** The system shall identify the appropriate alighting stage.
+
+**FR-030:** The system shall support journeys requiring multiple matatus.
+
+**FR-031:** The system shall identify transfer stages between different matatu routes.
+
+**FR-032:** The system shall provide walking directions between transfer stages.
+
+**FR-033:** The system shall provide instructions for each leg of a multi-matatu journey.
+
+**FR-034:** The system shall identify when a destination can be reached without using a matatu.
+
+**FR-035:** The system shall communicate when no suitable public transport route is available.
+
+## 4.6 Fare Estimation
+
+**FR-036:** The system shall provide estimated fares for recommended matatu journeys.
+
+**FR-037:** The system shall display fare estimates for individual journey legs.
+
+**FR-038:** The system shall calculate and display the estimated total fare for a complete journey.
+
+**FR-039:** The system shall support fare estimates for journeys involving multiple matatus.
+
+**FR-040:** The system shall identify the route and stages associated with each fare estimate.
+
+**FR-041:** The system shall communicate that displayed fares are estimates and may differ from actual fares.
+
+**FR-042:** The system shall support updating fare information when verified changes are available.
+
+## 4.7 Journey Information and Navigation
+
+**FR-043:** The system shall display the complete recommended journey.
+
+**FR-044:** The system shall provide walking directions from the passenger's starting location to the boarding stage.
+
+**FR-045:** The system shall display the recommended matatu route.
+
+**FR-046:** The system shall provide guidance on where the passenger should alight.
+
+**FR-047:** The system shall provide walking directions between transfer stages.
+
+**FR-048:** The system shall provide walking directions from the final alighting stage to the destination.
+
+**FR-049:** The system shall estimate walking time for walking segments.
+
+**FR-050:** The system shall estimate travel time for matatu segments.
+
+**FR-051:** The system shall display the estimated total journey time.
+
+**FR-052:** The system shall present journey instructions in a clear and understandable sequence.
+
+## 4.8 Journey Tracking
+
+**FR-053:** The system shall allow passengers to start a journey.
+
+**FR-054:** The system shall display the passenger's progress during an active journey when location access is available.
+
+**FR-055:** The system shall identify upcoming stages along the selected route.
+
+**FR-056:** The system shall help passengers determine when they are approaching their alighting stage.
+
+**FR-057:** The system shall allow passengers to end or cancel an active journey.
+
+**FR-058:** The system shall provide journey completion information.
+
+**FR-059:** The system shall handle temporary loss of location updates without unnecessarily terminating the journey.
+
+## 4.9 Notifications and Alerts
+
+**FR-060:** The system shall notify passengers when they are approaching their alighting stage.
+
+**FR-061:** The system shall notify passengers when they need to transfer to another matatu.
+
+**FR-062:** The system shall provide relevant journey progress notifications.
+
+**FR-063:** The system shall allow users to manage notification preferences.
+
+**FR-064:** The system shall communicate when important journey information changes, where such updates are available.
+
+## 4.10 Saved Places
+
+**FR-065:** The system shall allow users to save frequently visited places.
+
+**FR-066:** The system shall allow users to assign names to saved places.
+
+**FR-067:** The system shall allow users to edit saved places.
+
+**FR-068:** The system shall allow users to delete saved places.
+
+**FR-069:** The system shall allow users to select saved places as journey destinations.
+
+## 4.11 Route Alternatives
+
+**FR-070:** The system shall support displaying alternative routes where available.
+
+**FR-071:** The system shall allow passengers to compare available routes.
+
+**FR-072:** The system shall display relevant differences between route options, including estimated fares, travel times, walking distances, and number of transfers.
+
+## 4.12 Administrative Management
+
+**FR-073:** The system shall provide authorized administrators with access to transport data management functionality.
+
+**FR-074:** Administrators shall be able to create, update, and deactivate matatu stages.
+
+**FR-075:** Administrators shall be able to create, update, and deactivate matatu routes.
+
+**FR-076:** Administrators shall be able to associate stages with routes.
+
+**FR-077:** The system shall maintain the correct order of stages along a route.
+
+**FR-078:** Administrators shall be able to manage fare information.
+
+**FR-079:** Administrators shall be able to verify transport information before it becomes available to passengers.
+
+**FR-080:** The system shall record relevant administrative changes.
+
+**FR-081:** The system shall support managing transport information across multiple towns.
+
+---
+
+# 5. Non-Functional Requirements
+
+Non-functional requirements define how well the system should operate.
+
+## 5.1 Performance
+
+**NFR-001:** The application should load its primary interface within a reasonable time under normal network conditions.
+
+**NFR-002:** Destination searches should return results promptly.
+
+**NFR-003:** Route planning should produce results within an acceptable response time.
+
+**NFR-004:** Location updates should not cause noticeable application performance problems.
+
+**NFR-005:** The system should support multiple users accessing its services concurrently.
+
+## 5.2 Security
+
+**NFR-006:** All communication between the mobile application and backend services shall use HTTPS.
+
+**NFR-007:** User credentials shall be stored and handled securely.
+
+**NFR-008:** The system shall enforce authentication and authorization where required.
+
+**NFR-009:** Administrative functionality shall only be accessible to authorized users.
+
+**NFR-010:** Sensitive user information shall be protected against unauthorized access.
+
+**NFR-011:** The system shall request location permissions before accessing device location.
+
+## 5.3 Privacy
+
+**NFR-012:** The system shall explain why location access is required.
+
+**NFR-013:** Users shall be able to control location permissions through their device settings.
+
+**NFR-014:** The system shall only collect location information necessary for its intended functionality.
+
+**NFR-015:** Personal information shall be handled according to applicable data protection requirements.
+
+## 5.4 Reliability and Availability
+
+**NFR-016:** The system should remain operational under normal expected usage conditions.
+
+**NFR-017:** The system shall handle temporary network interruptions gracefully.
+
+**NFR-018:** The system shall provide meaningful error messages when services are unavailable.
+
+**NFR-019:** The system shall avoid displaying unavailable or invalid transport information as verified information.
+
+**NFR-020:** The system shall support recovery from unexpected application interruptions.
+
+## 5.5 Usability
+
+**NFR-021:** The application shall provide a simple and intuitive user interface.
+
+**NFR-022:** Navigation instructions shall use clear and understandable language.
+
+**NFR-023:** Important journey information shall be easy to identify.
+
+**NFR-024:** The application shall minimize unnecessary steps when planning journeys.
+
+**NFR-025:** The interface shall accommodate users with different levels of technological experience.
+
+## 5.6 Accessibility
+
+**NFR-026:** The application should support readable text sizes.
+
+**NFR-027:** Important interface elements should have sufficient visual contrast.
+
+**NFR-028:** Interactive elements should have clear labels.
+
+**NFR-029:** The application should avoid relying on colour alone to communicate important information.
+
+## 5.7 Scalability
+
+**NFR-030:** The system architecture should support increasing numbers of users.
+
+**NFR-031:** The system should support introducing additional towns and transport networks.
+
+**NFR-032:** The database should accommodate growing numbers of stages, routes, fares, and journeys.
+
+## 5.8 Compatibility
+
+**NFR-033:** The mobile application should support compatible Android devices.
+
+**NFR-034:** The mobile application should support compatible iOS devices.
+
+**NFR-035:** The application should accommodate different screen sizes and resolutions.
+
+**NFR-036:** The system should support commonly available GPS-enabled mobile devices.
+
+## 5.9 Network and Offline Behaviour
+
+**NFR-037:** The system shall communicate when internet connectivity is unavailable.
+
+**NFR-038:** The application should retain relevant previously loaded information where practical.
+
+**NFR-039:** The application should clearly identify cached or potentially outdated transport information.
+
+**NFR-040:** The system should resume normal operations when connectivity is restored.
+
+**NFR-041:** The application should distinguish between unavailable internet connectivity and unavailable GPS access.
+
+---
+
+# 6. Business Rules
+
+The following rules govern the behaviour of MatLink.
+
+**BR-001:** Every journey must have a defined starting location and destination before route planning can begin.
+
+**BR-002:** A boarding stage must be associated with a route that serves the passenger's intended direction of travel.
+
+**BR-003:** A route must contain an ordered sequence of stages.
+
+**BR-004:** A passenger may need to use more than one matatu to reach a destination.
+
+**BR-005:** When a journey requires multiple matatus, each leg must have its own boarding stage, alighting stage, route, and fare estimate.
+
+**BR-006:** The total estimated fare shall be calculated from the individual matatu journey legs.
+
+**BR-007:** Walking segments between the starting location, stages, transfer points, and destination must be included in the journey plan where applicable.
+
+**BR-008:** The system shall recommend routes based on available transport data.
+
+**BR-009:** Fare information shall be treated as estimated information rather than a guaranteed price.
+
+**BR-010:** Transport information must be verified before being presented as verified information.
+
+**BR-011:** A route or stage that has been deactivated shall not be recommended for new journeys.
+
+**BR-012:** Location-based navigation shall depend on the availability and accuracy of location information.
+
+**BR-013:** GPS positioning and internet connectivity shall be treated as separate requirements. GPS may determine a device's location without internet access, but online map and route services may still require connectivity.
+
+**BR-014:** Notifications for approaching stages shall depend on the availability of location updates and the necessary device permissions.
+
+**BR-015:** The system shall not assume that every matatu provides live location or vehicle tracking information.
+
+---
+
+# 7. External System Requirements
+
+MatLink may depend on external services to provide certain capabilities.
+
+## 7.1 Mapping Services
+
+A mapping provider will be required to support:
+
+- Map display.
+- Geographic coordinates.
+- Place discovery.
+- Walking directions.
+- Distance calculations.
+- Location visualization.
+
+## 7.2 Device Location Services
+
+The application will use device location services to:
+
+- Identify the passenger's current location.
+- Track movement during journeys.
+- Estimate proximity to stages.
+- Support alighting notifications.
+
+## 7.3 Internet Connectivity
+
+Internet access will be required for services that depend on remote maps, backend APIs, and current transport information.
+
+## 7.4 Push Notification Services
+
+A notification service may be used to deliver journey alerts and other relevant notifications.
+
+The specific external providers will be finalized during system architecture and implementation planning.
+
+---
+
+# 8. Data Requirements
+
+MatLink requires structured transport and location information.
+
+The system is expected to manage the following categories of data:
+
+## 8.1 User Data
+
+- User identification.
+- Name.
+- Email or other authentication identifiers.
+- Account information.
+- User preferences.
+
+## 8.2 Town Data
+
+- Town name.
+- Geographic boundaries or relevant location information.
+- Town-specific transport information.
+
+## 8.3 Place Data
+
+- Place name.
+- Place category.
+- Geographic coordinates.
+- Additional location details.
+
+## 8.4 Stage Data
+
+- Stage name.
+- Geographic coordinates.
+- Town association.
+- Stage description.
+- Verification status.
+- Operational status.
+
+## 8.5 Route Data
+
+- Route name or identifier.
+- Origin and destination information.
+- Associated town.
+- Ordered stages.
+- Route direction.
+- Operational status.
+
+## 8.6 Fare Data
+
+- Associated route.
+- Boarding stage.
+- Alighting stage.
+- Estimated fare.
+- Last update information.
+- Verification status.
+
+## 8.7 Journey Data
+
+- Passenger identifier, where applicable.
+- Starting location.
+- Destination.
+- Selected route.
+- Journey status.
+- Estimated fare.
+- Estimated travel time.
+- Journey creation time.
+
+## 8.8 Journey Leg Data
+
+- Associated journey.
+- Matatu route.
+- Boarding stage.
+- Alighting stage.
+- Estimated fare.
+- Estimated travel time.
+- Leg sequence.
+
+## 8.9 Saved Place Data
+
+- User identifier.
+- Place name.
+- Geographic coordinates.
+- Saved place label.
+
+---
+
+# 9. Constraints and Assumptions
+
+## 9.1 Constraints
+
+1. Accurate route recommendations depend on reliable and up-to-date transport information.
+2. Fare estimates depend on the availability of verified fare data.
+3. GPS accuracy may vary depending on the device and environment.
+4. Internet-dependent services may become unavailable during network interruptions.
+5. Walking directions depend on the capabilities and coverage of the selected mapping provider.
+6. The availability of some features may vary between Android and iOS devices.
+7. Live matatu tracking cannot be guaranteed without an appropriate vehicle-location data source.
+
+## 9.2 Assumptions
+
+1. Users will generally have access to GPS-enabled smartphones.
+2. Users will have internet access when using online route-planning and mapping services.
+3. Transport stages and routes can be collected and maintained through an appropriate data-management process.
+4. Fare information can be obtained and periodically verified.
+5. Passengers will follow the recommended journey instructions.
+6. The initial release will focus on selected towns before expanding to additional locations.
+
+---
+
+# 10. Minimum Viable Product (MVP)
+
+The MVP will focus on delivering the essential journey-planning experience.
+
+## 10.1 Included in the MVP
+
+- Location detection using GPS.
+- Manual starting location selection.
+- Destination search.
+- Destination selection using a map.
+- Nearby matatu stage discovery.
+- Matatu route recommendations.
+- Boarding stage identification.
+- Walking directions to boarding stages.
+- Fare estimation.
+- Multi-matatu journey planning.
+- Transfer stage identification.
+- Alighting guidance.
+- Walking directions to the final destination.
+- Estimated walking and travel times.
+- Basic journey tracking.
+
+## 10.2 Planned for Later Releases
+
+The following capabilities may be introduced after the initial release:
+
+- User accounts and personalized profiles.
+- Saved places.
+- Alternative route comparison.
+- Advanced journey notifications.
+- Recent journey history.
+- Offline access to cached transport information.
+- Community-based fare reporting.
+- User feedback and route reporting.
+- Live matatu tracking, where reliable tracking data becomes available.
+- Traffic-aware journey planning.
+- Additional language support.
+- Expansion to more towns.
+- Advanced transport analytics.
+
+---
+
+# 11. Acceptance Criteria
+
+MatLink's initial release will be considered functionally acceptable when the following conditions are met:
+
+1. A passenger can identify their current location or manually select a starting point.
+2. A passenger can search for and select a destination.
+3. The system can identify relevant nearby matatu stages.
+4. The system can recommend a suitable matatu route.
+5. The system can identify the correct boarding and alighting stages.
+6. The system can provide walking directions to the boarding stage.
+7. The system can estimate fares for individual journey legs.
+8. The system can calculate the estimated total fare for a journey.
+9. The system can generate journeys requiring multiple matatus.
+10. The system can identify transfer points and provide directions between stages.
+11. The system can provide estimated walking and travel times.
+12. The system can guide passengers towards their final alighting stage.
+13. The system can provide walking directions from the final stage to the destination.
+14. The system can communicate when suitable route information is unavailable.
+15. The system can handle temporary loss of connectivity or location updates without crashing.
+
+---
+
+# 12. Future Considerations
+
+Future development may explore:
+
+- Integration with transport operators and matatu associations.
+- More accurate fare information through verified community reporting.
+- Live vehicle-location services.
+- Traffic-aware route recommendations.
+- Predictive journey-time estimates.
+- Transport network analytics.
+- Support for additional public transport modes.
+- Expansion into more towns and cities.
+- Partnerships with transport stakeholders.
+
+These possibilities are not commitments for the initial release.
+
+---
+
+# 13. Conclusion
+
+MatLink aims to simplify public transport navigation by providing passengers with clear information about where to board, which matatu routes to use, how much a journey may cost, where to transfer, and where to alight.
+
+This specification establishes the initial functional and non-functional requirements that will guide the design, architecture, implementation, and testing of the platform.
+
+The requirements may be refined as the project progresses and additional information becomes available.

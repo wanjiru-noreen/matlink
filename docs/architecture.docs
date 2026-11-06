@@ -1,0 +1,725 @@
+# MatLink
+# System Architecture Document
+
+**Document Version:** 1.0  
+**Project:** MatLink  
+**Document Status:** Proposed Architecture
+
+---
+
+# 1. Introduction
+
+## 1.1 Purpose
+
+This document describes the proposed technical architecture of MatLink.
+
+It defines the system components, their responsibilities, communication mechanisms, data flow, infrastructure, and architectural decisions that will guide implementation.
+
+## 1.2 Architectural Goals
+
+The architecture should:
+
+1. Support reliable public transport route discovery.
+2. Provide accurate location-based navigation.
+3. Support journeys involving multiple matatus.
+4. Separate mobile application functionality from backend business logic.
+5. Support expansion into additional towns.
+6. Maintain reliable and consistent transport data.
+7. Protect user information and location data.
+8. Support future integrations with external services.
+9. Remain maintainable as the platform grows.
+
+## 1.3 Architectural Style
+
+MatLink will initially use a **client-server architecture with a modular backend**.
+
+The mobile application communicates with a centralized backend through REST APIs.
+
+The backend handles business logic, route planning, transport data retrieval, fare estimation, and journey management.
+
+A modular monolith is proposed for the initial backend rather than multiple independent microservices. This reduces operational complexity while keeping the code organized into separate functional modules.
+
+---
+
+# 2. High-Level Architecture
+
+## 2.1 Architecture Overview
+
+The system consists of five primary layers:
+
+1. Presentation Layer
+2. Application Layer
+3. Business Logic Layer
+4. Data Layer
+5. External Services Layer
+
+## 2.2 Architecture Diagram
+
+```text
+                  PASSENGER
+                      |
+                      |
+             +------------------+
+             |   Mobile App     |
+             |     Flutter      |
+             +------------------+
+                      |
+                HTTPS / REST
+                      |
+                      v
+             +------------------+
+             |   Go Backend     |
+             |   REST API       |
+             +------------------+
+                      |
+          +-----------+-----------+
+          |           |           |
+          v           v           v
+     +---------+ +---------+ +---------+
+     |  User   | | Routing | |  Fare   |
+     | Module  | | Module  | | Module  |
+     +---------+ +---------+ +---------+
+          |           |           |
+          v           v           v
+     +---------+ +---------+ +---------+
+     | Journey | | Stage & | |  Admin  |
+     | Module  | |  Route  | | Module  |
+     +---------+ +---------+ +---------+
+          |           |           |
+          +-----------+-----------+
+                      |
+                      v
+             +------------------+
+             |   PostgreSQL     |
+             |    + PostGIS     |
+             +------------------+
+                      |
+                      |
+          +-----------+-----------+
+          |           |           |
+          v           v           v
+      Mapping    Location     Notification
+      Services    Services      Services
+```
+
+---
+
+# 3. Presentation Layer
+
+## 3.1 Mobile Application
+
+**Proposed Technology:** Flutter
+
+The mobile application provides the primary interface through which passengers interact with MatLink.
+
+It is responsible for:
+
+- Displaying maps and locations.
+- Collecting starting locations and destinations.
+- Displaying nearby matatu stages.
+- Presenting recommended journeys.
+- Displaying fare estimates.
+- Providing journey navigation instructions.
+- Tracking passenger movement during active journeys.
+- Displaying notifications.
+- Managing user preferences.
+
+## 3.2 Mobile Application Modules
+
+The mobile application will be organized into the following functional modules:
+
+### Authentication Module
+Handles registration, login, logout, and session management.
+
+### Location Module
+Handles GPS permissions, current location detection, manual location selection, and location updates.
+
+### Destination Module
+Handles destination searches, suggestions, and map-based selection.
+
+### Route Discovery Module
+Displays available routes, boarding stages, transfers, and alighting stages.
+
+### Journey Module
+Handles journey creation, active navigation, progress, and completion.
+
+### Fare Module
+Displays estimated fares for individual journey legs and complete journeys.
+
+### Notification Module
+Displays relevant journey alerts.
+
+### Saved Places Module
+Manages frequently visited locations.
+
+---
+
+# 4. Application Layer
+
+## 4.1 Backend Overview
+
+**Proposed Technology:** Go
+
+The backend acts as the central processing layer of MatLink.
+
+It receives requests from the mobile application, processes business operations, retrieves transport information, and returns structured responses.
+
+The backend will expose REST APIs over HTTPS.
+
+## 4.2 Backend Modules
+
+The backend will initially be organized as a modular monolith.
+
+### 4.2.1 Authentication Module
+
+Responsibilities:
+
+- User registration.
+- User login.
+- Authentication.
+- Token generation and validation.
+- Authorization.
+- Account management.
+
+### 4.2.2 Location Module
+
+Responsibilities:
+
+- Processing location-related requests.
+- Finding nearby stages.
+- Performing geographic distance calculations.
+- Supporting location-based searches.
+
+GPS acquisition itself will happen on the passenger's device.
+
+### 4.2.3 Destination Module
+
+Responsibilities:
+
+- Destination search.
+- Place lookup.
+- Destination validation.
+- Retrieving geographic coordinates.
+- Managing saved places.
+
+### 4.2.4 Stage Management Module
+
+Responsibilities:
+
+- Retrieving stages.
+- Finding nearby stages.
+- Managing stage information.
+- Managing stage coordinates.
+- Maintaining stage verification and operational status.
+
+### 4.2.5 Route Management Module
+
+Responsibilities:
+
+- Managing matatu routes.
+- Associating stages with routes.
+- Maintaining stage sequence.
+- Supporting route directions.
+- Retrieving routes serving particular stages.
+
+### 4.2.6 Route Planning Module
+
+This is one of the core modules of MatLink.
+
+Responsibilities:
+
+- Identifying suitable routes between locations.
+- Finding appropriate boarding stages.
+- Finding appropriate alighting stages.
+- Identifying possible transfers.
+- Generating multi-matatu journeys.
+- Comparing journey alternatives.
+- Calculating walking segments between journey legs.
+
+The routing engine will use transport network information to determine how passengers can move between stages.
+
+### 4.2.7 Fare Estimation Module
+
+Responsibilities:
+
+- Retrieving fare information.
+- Estimating fares between boarding and alighting stages.
+- Calculating fares for individual journey legs.
+- Calculating total estimated journey costs.
+- Identifying missing or outdated fare information.
+
+### 4.2.8 Journey Management Module
+
+Responsibilities:
+
+- Creating journeys.
+- Retrieving journey details.
+- Managing journey legs.
+- Tracking journey progress.
+- Updating journey status.
+- Recording completed and cancelled journeys.
+
+### 4.2.9 Notification Module
+
+Responsibilities:
+
+- Generating journey alerts.
+- Supporting approaching-stage notifications.
+- Supporting transfer notifications.
+- Managing notification preferences.
+- Integrating with push notification services.
+
+### 4.2.10 Administration Module
+
+Responsibilities:
+
+- Managing towns.
+- Managing stages.
+- Managing routes.
+- Managing route-stage relationships.
+- Managing fares.
+- Verifying transport information.
+- Managing data contributors.
+- Recording administrative activities.
+
+---
+
+# 5. Business Logic and Route Planning
+
+## 5.1 Transport Network Representation
+
+MatLink will represent the matatu transport network as a graph.
+
+The graph will consist of:
+
+- **Nodes:** Matatu stages.
+- **Edges:** Connections between stages through matatu routes or walking paths.
+- **Weights:** Fare, estimated travel time, walking distance, or other route-selection criteria.
+
+Each matatu route will contain an ordered sequence of stages.
+
+A route may be represented as:
+
+```text
+Route A:
+
+Stage 1
+   |
+Stage 2
+   |
+Stage 3
+   |
+Stage 4
+   |
+Stage 5
+```
+
+## 5.2 Route Planning Process
+
+When a passenger requests a journey:
+
+1. The backend receives the starting coordinates and destination.
+2. The system identifies relevant nearby boarding stages.
+3. The system identifies stages serving the destination area.
+4. The routing engine searches for routes connecting the relevant stages.
+5. The system determines whether a direct journey is available.
+6. If no direct journey is suitable, the engine searches for possible transfers.
+7. The system calculates walking distances between stages.
+8. The fare module estimates the cost of each matatu leg.
+9. The system calculates estimated total journey time and fare.
+10. The backend returns the available journey options.
+
+## 5.3 Multi-Matatu Journey Planning
+
+A journey may contain multiple transport legs.
+
+Example:
+
+```text
+Passenger's Location
+        |
+        | Walk
+        v
+   Boarding Stage A
+        |
+        | Matatu Route 1
+        v
+   Transfer Stage B
+        |
+        | Walk
+        v
+   Boarding Stage B
+        |
+        | Matatu Route 2
+        v
+   Final Alighting Stage
+        |
+        | Walk
+        v
+     Destination
+```
+
+Each journey leg must contain:
+
+- Matatu route.
+- Boarding stage.
+- Alighting stage.
+- Estimated fare.
+- Estimated travel time.
+- Journey sequence.
+
+Walking segments must be represented separately from matatu legs.
+
+## 5.4 Route Selection Criteria
+
+The route planner should consider:
+
+- Total estimated fare.
+- Total estimated travel time.
+- Walking distance.
+- Number of transfers.
+- Availability of route information.
+- Quality and freshness of transport data.
+
+The system should support different route preferences in future releases, such as cheapest route, fastest route, or route with the fewest transfers.
+
+---
+
+# 6. Data Layer
+
+## 6.1 Database
+
+**Proposed Technology:** PostgreSQL with PostGIS.
+
+PostgreSQL will store the application's structured data.
+
+PostGIS will support geographic data storage and spatial queries.
+
+## 6.2 Database Responsibilities
+
+The database will store:
+
+- User information.
+- Town information.
+- Places and destinations.
+- Matatu stages.
+- Matatu routes.
+- Route-stage relationships.
+- Fare information.
+- Journey records.
+- Journey legs.
+- Saved places.
+- Administrative and verification records.
+
+## 6.3 Geographic Data
+
+Geographic coordinates will be stored for relevant entities, including:
+
+- Matatu stages.
+- Places.
+- Town boundaries.
+- Other geographic reference points.
+
+PostGIS will support operations such as:
+
+- Finding nearby stages.
+- Calculating geographic distances.
+- Searching within geographic areas.
+- Identifying stages near selected locations.
+
+Spatial indexes will be used to improve geographic query performance.
+
+## 6.4 Data Integrity
+
+The database should enforce:
+
+- Primary key constraints.
+- Foreign key relationships.
+- Appropriate uniqueness constraints.
+- Valid geographic coordinate ranges.
+- Required fields.
+- Referential integrity.
+- Appropriate timestamps.
+
+Transport information should include verification and update information where applicable.
+
+---
+
+# 7. External Services Layer
+
+MatLink may integrate with external services for functionality that should not be implemented entirely from scratch.
+
+## 7.1 Mapping Provider
+
+A mapping provider will support:
+
+- Map rendering.
+- Place discovery.
+- Walking directions.
+- Geographic visualization.
+- Distance and travel-time estimates.
+
+The specific provider will be selected during implementation planning.
+
+## 7.2 Device GPS
+
+The mobile application will use device GPS to determine the passenger's current location.
+
+GPS acquisition will be handled by Flutter through appropriate device location APIs.
+
+The backend will receive location coordinates when required.
+
+## 7.3 Push Notifications
+
+A push notification provider may be used to deliver:
+
+- Alighting reminders.
+- Transfer alerts.
+- Journey updates.
+
+## 7.4 External Service Failure
+
+The system should handle external service failures gracefully.
+
+For example:
+
+- If map services are unavailable, the application should communicate the limitation.
+- If GPS is unavailable, manual location selection should remain available.
+- If internet connectivity is lost, previously loaded information may remain accessible where practical.
+
+---
+
+# 8. API Communication
+
+## 8.1 Communication Protocol
+
+The mobile application and backend will communicate using REST APIs over HTTPS.
+
+Data exchange will use JSON.
+
+## 8.2 API Responsibilities
+
+The backend API will expose endpoints for:
+
+- Authentication.
+- Location searches.
+- Destination searches.
+- Nearby stage discovery.
+- Route planning.
+- Fare estimation.
+- Journey management.
+- Saved places.
+- Administrative management.
+
+## 8.3 API Design Principles
+
+The API should:
+
+- Use consistent resource naming.
+- Follow appropriate HTTP methods.
+- Return predictable response structures.
+- Use meaningful HTTP status codes.
+- Validate incoming requests.
+- Provide clear error responses.
+- Support API versioning.
+
+The initial API version will use the `/api/v1/` prefix.
+
+---
+
+# 9. Security Architecture
+
+The system will implement security measures across the mobile application, backend, and database.
+
+## 9.1 Authentication
+
+The backend will authenticate users before granting access to protected resources.
+
+A token-based authentication mechanism is proposed.
+
+## 9.2 Authorization
+
+Role-based authorization will distinguish between:
+
+- Passengers.
+- Administrators.
+- Authorized transport data contributors.
+
+## 9.3 Data Protection
+
+The system will:
+
+- Use HTTPS for API communication.
+- Protect authentication credentials.
+- Validate incoming data.
+- Restrict administrative operations.
+- Protect sensitive user information.
+- Apply appropriate database access controls.
+
+## 9.4 Location Privacy
+
+Location information will only be accessed with appropriate user permission.
+
+Location data should only be collected and retained when necessary for the application's functionality.
+
+---
+
+# 10. Deployment Architecture
+
+## 10.1 Proposed Infrastructure
+
+The initial deployment environment will include:
+
+- Flutter mobile application.
+- Go backend application.
+- PostgreSQL database with PostGIS.
+- External mapping services.
+- Push notification services.
+
+## 10.2 Containerization
+
+Docker is proposed for packaging the backend and supporting services.
+
+This will help maintain consistent development, testing, and deployment environments.
+
+## 10.3 Deployment Structure
+
+```text
+              MOBILE DEVICES
+                    |
+                    |
+                 HTTPS
+                    |
+                    v
+              GO BACKEND
+                    |
+                    |
+             +------+------+
+             |             |
+             v             v
+        PostgreSQL     External APIs
+         + PostGIS     Mapping / Other
+```
+
+## 10.4 Environments
+
+The project should maintain separate environments:
+
+### Development
+Used for active development and local testing.
+
+### Testing
+Used for automated tests and integration testing.
+
+### Production
+Used by actual passengers and administrators.
+
+Sensitive configuration should be provided through environment variables or an appropriate secrets-management system.
+
+---
+
+# 11. Monitoring and Logging
+
+The backend should provide structured logs for:
+
+- API requests.
+- Application errors.
+- Route-planning operations.
+- Database failures.
+- Authentication events.
+- Administrative changes.
+
+The system should support monitoring:
+
+- API availability.
+- Response times.
+- Error rates.
+- Database performance.
+- External service failures.
+
+Sensitive credentials and unnecessary personal location information must not be written to logs.
+
+---
+
+# 12. Scalability and Extensibility
+
+The architecture should support future expansion.
+
+Potential extensions include:
+
+- Additional towns.
+- More public transport modes.
+- Live matatu tracking.
+- Traffic-aware routing.
+- Community transport data contributions.
+- Advanced fare reporting.
+- Transport operator integrations.
+- Web-based administration.
+- Advanced journey analytics.
+
+The modular backend should make it possible to introduce these capabilities without unnecessarily restructuring the entire application.
+
+---
+
+# 13. Architectural Decisions
+
+| Area | Proposed Decision | Reason |
+|---|---|---|
+| Mobile Application | Flutter | Cross-platform mobile development |
+| Backend | Go | Efficient backend development |
+| API | REST/JSON | Straightforward client-server communication |
+| Database | PostgreSQL | Relational data management |
+| Geographic Data | PostGIS | Spatial queries and location-based searches |
+| Architecture | Modular Monolith | Simpler initial deployment and maintenance |
+| Authentication | Token-based | Secure API authentication |
+| Containerization | Docker | Consistent environments |
+| Mapping | External Mapping Provider | Maps and walking directions |
+| Notifications | Push Notification Provider | Journey alerts |
+
+These decisions are proposed and may be refined after technical evaluation.
+
+---
+
+# 14. Key Architectural Considerations
+
+## 14.1 Transport Data Accuracy
+
+The usefulness of MatLink depends heavily on the accuracy of its stage, route, and fare information.
+
+A data collection, verification, and maintenance process must be established.
+
+## 14.2 Route Planning Complexity
+
+The route-planning engine is a central part of the platform.
+
+It must account for route direction, ordered stages, transfers, walking distances, fares, and travel times.
+
+## 14.3 Location Accuracy
+
+GPS readings may be inaccurate or temporarily unavailable.
+
+The application should not rely exclusively on GPS for journey planning.
+
+## 14.4 Mapping Costs
+
+External mapping services may introduce usage limits and costs.
+
+The selected provider should be evaluated based on coverage, pricing, functionality, and licensing.
+
+## 14.5 Offline Functionality
+
+Full offline navigation may not be practical in the initial release.
+
+The architecture should nevertheless allow selected transport information to be cached for later use.
+
+---
+
+# 15. Conclusion
+
+MatLink will use a mobile-first client-server architecture supported by a modular Go backend and a PostgreSQL database with geographic capabilities.
+
+The architecture separates presentation, application logic, transport data management, and external services.
+
+The route-planning engine will form the core of the platform, enabling passengers to discover suitable matatu journeys, navigate transfers, estimate fares, and receive alighting guidance.
+
+This architecture establishes the technical foundation for implementing MatLink while allowing the platform to evolve as its requirements and transport data grow.

@@ -1,0 +1,950 @@
+# MatLink
+# API Specification
+
+**Document Version:** 1.0  
+**Project:** MatLink  
+**API Style:** REST  
+**Data Format:** JSON  
+**Protocol:** HTTPS  
+**API Version:** v1  
+**Document Status:** Proposed Specification
+
+---
+
+# 1. Introduction
+
+## 1.1 Purpose
+
+This document defines the API interface through which the MatLink mobile application communicates with the backend.
+
+It specifies available endpoints, HTTP methods, request parameters, response formats, authentication requirements, validation rules, and error-handling conventions.
+
+## 1.2 API Objectives
+
+The API should:
+
+1. Provide access to transport and location information.
+2. Support destination discovery.
+3. Support matatu route planning.
+4. Provide fare estimates.
+5. Manage passenger journeys.
+6. Support journey tracking.
+7. Provide access to saved places.
+8. Support administrative transport-data management.
+9. Maintain consistent communication between clients and backend services.
+
+## 1.3 Base URL
+
+Development:
+
+`http://localhost:8080/api/v1`
+
+Production:
+
+`https://api.matlink.example/api/v1`
+
+The production domain is a placeholder and must be replaced before deployment.
+
+## 1.4 Communication Format
+
+All API requests and responses will use JSON unless otherwise specified.
+
+Example:
+
+```json
+{
+  "status": "success",
+  "data": {}
+}
+```
+
+---
+
+# 2. API Conventions
+
+## 2.1 HTTP Methods
+
+| Method | Purpose |
+|---|---|
+| GET | Retrieve information |
+| POST | Create a resource or perform an operation |
+| PUT | Replace an existing resource |
+| PATCH | Partially update a resource |
+| DELETE | Delete a resource |
+
+## 2.2 HTTP Status Codes
+
+| Code | Meaning |
+|---|---|
+| 200 | OK |
+| 201 | Created |
+| 204 | No Content |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+| 422 | Unprocessable Entity |
+| 429 | Too Many Requests |
+| 500 | Internal Server Error |
+| 503 | Service Unavailable |
+
+## 2.3 Authentication
+
+Protected endpoints will use token-based authentication.
+
+Requests will include:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+Public endpoints will not require authentication.
+
+Administrative endpoints will require appropriate administrative permissions.
+
+## 2.4 Response Structure
+
+Successful responses should follow a consistent structure.
+
+Example:
+
+```json
+{
+  "status": "success",
+  "message": "Request completed successfully.",
+  "data": {}
+}
+```
+
+Error responses should follow:
+
+```json
+{
+  "status": "error",
+  "message": "An error occurred.",
+  "code": "RESOURCE_NOT_FOUND",
+  "details": {}
+}
+```
+
+## 2.5 Pagination
+
+Endpoints returning large collections should support pagination.
+
+Proposed query parameters:
+
+- `page`
+- `limit`
+
+Example:
+
+`GET /stages?page=1&limit=20`
+
+Paginated responses should include:
+
+```json
+{
+  "status": "success",
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "total_pages": 5
+  }
+}
+```
+
+---
+
+# 3. Authentication Endpoints
+
+Authentication endpoints manage user registration and access.
+
+## 3.1 Register User
+
+**Endpoint:** `POST /auth/register`
+
+**Authentication:** Public
+
+### Request
+
+```json
+{
+  "full_name": "John Doe",
+  "email": "john@example.com",
+  "password": "secure-password"
+}
+```
+
+### Response
+
+**Status:** 201 Created
+
+```json
+{
+  "status": "success",
+  "message": "Account created successfully.",
+  "data": {
+    "user": {
+      "id": "uuid",
+      "full_name": "John Doe",
+      "email": "john@example.com",
+      "role": "PASSENGER"
+    }
+  }
+}
+```
+
+## 3.2 Login
+
+**Endpoint:** `POST /auth/login`
+
+**Authentication:** Public
+
+### Request
+
+```json
+{
+  "email": "john@example.com",
+  "password": "secure-password"
+}
+```
+
+### Response
+
+**Status:** 200 OK
+
+```json
+{
+  "status": "success",
+  "data": {
+    "access_token": "token",
+    "refresh_token": "token",
+    "token_type": "Bearer",
+    "expires_in": 3600,
+    "user": {
+      "id": "uuid",
+      "full_name": "John Doe",
+      "role": "PASSENGER"
+    }
+  }
+}
+```
+
+## 3.3 Refresh Token
+
+**Endpoint:** `POST /auth/refresh`
+
+**Authentication:** Refresh token required.
+
+### Request
+
+```json
+{
+  "refresh_token": "token"
+}
+```
+
+### Response
+
+Returns a new access token and, where applicable, a rotated refresh token.
+
+## 3.4 Logout
+
+**Endpoint:** `POST /auth/logout`
+
+**Authentication:** Required.
+
+Invalidates the relevant refresh token or session.
+
+## 3.5 Get Current User
+
+**Endpoint:** `GET /auth/me`
+
+**Authentication:** Required.
+
+Returns the authenticated user's profile information.
+
+---
+
+# 4. Location Endpoints
+
+Location endpoints support geographic searches.
+
+The mobile application obtains GPS coordinates from the device and sends them to the backend when needed.
+
+## 4.1 Find Nearby Stages
+
+**Endpoint:** `GET /locations/nearby-stages`
+
+**Authentication:** Public
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| latitude | number | Yes | Current latitude |
+| longitude | number | Yes | Current longitude |
+| radius | integer | No | Search radius in metres |
+| limit | integer | No | Maximum results |
+
+### Example
+
+`GET /locations/nearby-stages?latitude=-0.0917&longitude=34.7680&radius=2000`
+
+### Response
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "stage-uuid",
+      "name": "Example Stage",
+      "latitude": -0.0917,
+      "longitude": 34.7680,
+      "distance_metres": 450,
+      "verification_status": "VERIFIED"
+    }
+  ]
+}
+```
+
+## 4.2 Find Nearby Places
+
+**Endpoint:** `GET /locations/nearby-places`
+
+**Authentication:** Public
+
+Accepts geographic coordinates and an optional search radius.
+
+Returns nearby places and their geographic information.
+
+---
+
+# 5. Destination Endpoints
+
+## 5.1 Search Destinations
+
+**Endpoint:** `GET /places/search`
+
+**Authentication:** Public
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| query | string | Yes | Search term |
+| town_id | UUID | No | Town filter |
+| limit | integer | No | Maximum results |
+
+### Example
+
+`GET /places/search?query=Kisumu&limit=10`
+
+### Response
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "place-uuid",
+      "name": "Example Destination",
+      "category": "LANDMARK",
+      "town": "Kisumu",
+      "latitude": -0.0917,
+      "longitude": 34.7680
+    }
+  ]
+}
+```
+
+## 5.2 Get Place Details
+
+**Endpoint:** `GET /places/{place_id}`
+
+**Authentication:** Public
+
+Returns complete information about a selected place.
+
+---
+
+# 6. Stage Endpoints
+
+## 6.1 List Stages
+
+**Endpoint:** `GET /stages`
+
+**Authentication:** Public
+
+### Query Parameters
+
+- `town_id`
+- `search`
+- `page`
+- `limit`
+
+Returns available and appropriately verified stages.
+
+## 6.2 Get Stage Details
+
+**Endpoint:** `GET /stages/{stage_id}`
+
+**Authentication:** Public
+
+Returns:
+
+- Stage name.
+- Geographic coordinates.
+- Town information.
+- Operational status.
+- Routes serving the stage.
+
+## 6.3 Get Routes Serving a Stage
+
+**Endpoint:** `GET /stages/{stage_id}/routes`
+
+**Authentication:** Public
+
+Returns matatu routes associated with the selected stage.
+
+---
+
+# 7. Route Endpoints
+
+## 7.1 List Routes
+
+**Endpoint:** `GET /routes`
+
+**Authentication:** Public
+
+### Query Parameters
+
+- `town_id`
+- `stage_id`
+- `search`
+- `page`
+- `limit`
+
+## 7.2 Get Route Details
+
+**Endpoint:** `GET /routes/{route_id}`
+
+**Authentication:** Public
+
+### Response
+
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "route-uuid",
+    "name": "Example Route",
+    "origin": "Stage A",
+    "destination": "Stage E",
+    "direction": "FORWARD",
+    "stages": [
+      {
+        "id": "stage-a",
+        "name": "Stage A",
+        "sequence_number": 1
+      },
+      {
+        "id": "stage-b",
+        "name": "Stage B",
+        "sequence_number": 2
+      }
+    ]
+  }
+}
+```
+
+---
+
+# 8. Route Planning Endpoints
+
+Route planning is one of the core functionalities of MatLink.
+
+## 8.1 Plan Journey
+
+**Endpoint:** `POST /routes/plan`
+
+**Authentication:** Public
+
+### Request
+
+```json
+{
+  "origin": {
+    "latitude": -0.0917,
+    "longitude": 34.7680
+  },
+  "destination": {
+    "latitude": -0.1020,
+    "longitude": 34.7500
+  },
+  "preferences": {
+    "priority": "BALANCED",
+    "max_transfers": 2
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "status": "success",
+  "data": {
+    "routes": [
+      {
+        "route_id": "route-uuid",
+        "total_estimated_fare": 100,
+        "currency": "KES",
+        "estimated_duration_minutes": 45,
+        "total_walking_distance_metres": 700,
+        "number_of_transfers": 1,
+        "legs": [
+          {
+            "sequence_number": 1,
+            "route_id": "route-1",
+            "route_name": "Route A",
+            "boarding_stage": {
+              "id": "stage-a",
+              "name": "Stage A"
+            },
+            "alighting_stage": {
+              "id": "stage-b",
+              "name": "Stage B"
+            },
+            "estimated_fare": 50,
+            "estimated_duration_minutes": 20
+          },
+          {
+            "sequence_number": 2,
+            "route_id": "route-2",
+            "route_name": "Route B",
+            "boarding_stage": {
+              "id": "stage-c",
+              "name": "Stage C"
+            },
+            "alighting_stage": {
+              "id": "stage-d",
+              "name": "Stage D"
+            },
+            "estimated_fare": 50,
+            "estimated_duration_minutes": 15
+          }
+        ],
+        "walking_segments": [
+          {
+            "from": "Origin",
+            "to": "Stage A",
+            "distance_metres": 300,
+            "estimated_duration_minutes": 5
+          },
+          {
+            "from": "Stage B",
+            "to": "Stage C",
+            "distance_metres": 400,
+            "estimated_duration_minutes": 7
+          },
+          {
+            "from": "Stage D",
+            "to": "Destination",
+            "distance_metres": 0,
+            "estimated_duration_minutes": 0
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The example values are illustrative.
+
+## 8.2 Get Route Alternatives
+
+**Endpoint:** `POST /routes/alternatives`
+
+**Authentication:** Public
+
+Accepts starting coordinates and destination coordinates.
+
+Returns alternative journey options where available.
+
+---
+
+# 9. Fare Endpoints
+
+## 9.1 Estimate Fare
+
+**Endpoint:** `GET /fares/estimate`
+
+**Authentication:** Public
+
+### Query Parameters
+
+| Parameter | Type | Required |
+|---|---|---|
+| route_id | UUID | Yes |
+| boarding_stage_id | UUID | Yes |
+| alighting_stage_id | UUID | Yes |
+
+### Response
+
+```json
+{
+  "status": "success",
+  "data": {
+    "route_id": "route-uuid",
+    "boarding_stage_id": "stage-a",
+    "alighting_stage_id": "stage-b",
+    "estimated_fare": 50,
+    "currency": "KES",
+    "verification_status": "VERIFIED",
+    "last_updated": "2026-11-06T10:00:00Z"
+  }
+}
+```
+
+## 9.2 Get Route Fares
+
+**Endpoint:** `GET /routes/{route_id}/fares`
+
+**Authentication:** Public
+
+Returns applicable fare information for the selected route.
+
+---
+
+# 10. Journey Endpoints
+
+## 10.1 Create Journey
+
+**Endpoint:** `POST /journeys`
+
+**Authentication:** Optional for guest journeys.
+
+Creates a journey from a selected route-planning result.
+
+### Request
+
+```json
+{
+  "origin": {
+    "latitude": -0.0917,
+    "longitude": 34.7680
+  },
+  "destination": {
+    "latitude": -0.1020,
+    "longitude": 34.7500
+  },
+  "route_option_id": "route-option-id"
+}
+```
+
+### Response
+
+Returns the created journey and its associated legs.
+
+## 10.2 Get Journey Details
+
+**Endpoint:** `GET /journeys/{journey_id}`
+
+**Authentication:** Required for journeys associated with registered users.
+
+Returns:
+
+- Starting location.
+- Destination.
+- Journey status.
+- Estimated fare.
+- Estimated duration.
+- Journey legs.
+- Walking segments.
+
+## 10.3 Start Journey
+
+**Endpoint:** `POST /journeys/{journey_id}/start`
+
+**Authentication:** Required where applicable.
+
+Marks the journey as active.
+
+## 10.4 Update Journey Progress
+
+**Endpoint:** `PATCH /journeys/{journey_id}/progress`
+
+**Authentication:** Required where applicable.
+
+### Request
+
+```json
+{
+  "latitude": -0.0950,
+  "longitude": 34.7600,
+  "current_leg_id": "leg-uuid"
+}
+```
+
+The backend processes the supplied progress information.
+
+Location processing must follow applicable privacy and permission requirements.
+
+## 10.5 Complete Journey Leg
+
+**Endpoint:** `POST /journeys/{journey_id}/legs/{leg_id}/complete`
+
+Marks an individual transport leg as completed.
+
+## 10.6 Complete Journey
+
+**Endpoint:** `POST /journeys/{journey_id}/complete`
+
+Marks the entire journey as completed.
+
+## 10.7 Cancel Journey
+
+**Endpoint:** `POST /journeys/{journey_id}/cancel`
+
+Cancels an active or planned journey.
+
+## 10.8 Get Journey History
+
+**Endpoint:** `GET /journeys/history`
+
+**Authentication:** Required.
+
+Returns the authenticated user's previous journeys.
+
+---
+
+# 11. Saved Places Endpoints
+
+All saved-place endpoints require authentication.
+
+## 11.1 Create Saved Place
+
+**Endpoint:** `POST /saved-places`
+
+### Request
+
+```json
+{
+  "label": "Home",
+  "place_id": null,
+  "location": {
+    "latitude": -0.0917,
+    "longitude": 34.7680
+  }
+}
+```
+
+## 11.2 List Saved Places
+
+**Endpoint:** `GET /saved-places`
+
+Returns the user's saved locations.
+
+## 11.3 Update Saved Place
+
+**Endpoint:** `PATCH /saved-places/{saved_place_id}`
+
+Updates the selected saved place.
+
+## 11.4 Delete Saved Place
+
+**Endpoint:** `DELETE /saved-places/{saved_place_id}`
+
+Deletes the selected saved place.
+
+---
+
+# 12. Notification Endpoints
+
+## 12.1 Register Device
+
+**Endpoint:** `POST /notifications/devices`
+
+**Authentication:** Required.
+
+Registers a device for push notifications.
+
+### Request
+
+```json
+{
+  "device_token": "device-token",
+  "platform": "ANDROID"
+}
+```
+
+## 12.2 Update Notification Preferences
+
+**Endpoint:** `PATCH /notifications/preferences`
+
+**Authentication:** Required.
+
+Updates the user's notification preferences.
+
+## 12.3 Get Notifications
+
+**Endpoint:** `GET /notifications`
+
+**Authentication:** Required.
+
+Returns relevant notifications for the authenticated user.
+
+---
+
+# 13. Administrative Endpoints
+
+All administrative endpoints require appropriate administrative authorization.
+
+## 13.1 Town Management
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/admin/towns` | Create town |
+| GET | `/admin/towns` | List towns |
+| PATCH | `/admin/towns/{id}` | Update town |
+| DELETE | `/admin/towns/{id}` | Deactivate town |
+
+## 13.2 Stage Management
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/admin/stages` | Create stage |
+| GET | `/admin/stages` | List stages |
+| PATCH | `/admin/stages/{id}` | Update stage |
+| DELETE | `/admin/stages/{id}` | Deactivate stage |
+| PATCH | `/admin/stages/{id}/verify` | Verify stage |
+
+## 13.3 Route Management
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/admin/routes` | Create route |
+| GET | `/admin/routes` | List routes |
+| PATCH | `/admin/routes/{id}` | Update route |
+| DELETE | `/admin/routes/{id}` | Deactivate route |
+| PUT | `/admin/routes/{id}/stages` | Replace route-stage sequence |
+
+## 13.4 Fare Management
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/admin/fares` | Create fare |
+| GET | `/admin/fares` | List fares |
+| PATCH | `/admin/fares/{id}` | Update fare |
+| PATCH | `/admin/fares/{id}/verify` | Verify fare |
+
+## 13.5 Data Submission Management
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/admin/submissions` | List submissions |
+| GET | `/admin/submissions/{id}` | View submission |
+| POST | `/admin/submissions/{id}/approve` | Approve submission |
+| POST | `/admin/submissions/{id}/reject` | Reject submission |
+
+---
+
+# 14. Error Handling
+
+The API must return consistent error responses.
+
+Example:
+
+```json
+{
+  "status": "error",
+  "message": "No suitable matatu route was found.",
+  "code": "ROUTE_NOT_FOUND",
+  "details": {
+    "origin": "selected location",
+    "destination": "selected destination"
+  }
+}
+```
+
+## 14.1 Standard Error Codes
+
+| Error Code | Description |
+|---|---|
+| VALIDATION_ERROR | Invalid request data |
+| UNAUTHORIZED | Authentication required |
+| FORBIDDEN | Insufficient permissions |
+| RESOURCE_NOT_FOUND | Requested resource does not exist |
+| ROUTE_NOT_FOUND | No suitable route found |
+| STAGE_NOT_FOUND | Stage does not exist |
+| PLACE_NOT_FOUND | Place does not exist |
+| FARE_NOT_FOUND | Fare information unavailable |
+| LOCATION_UNAVAILABLE | Location information unavailable |
+| INVALID_COORDINATES | Invalid geographic coordinates |
+| NETWORK_ERROR | External service or network failure |
+| INTERNAL_ERROR | Unexpected backend failure |
+
+---
+
+# 15. API Security
+
+The API shall implement:
+
+1. HTTPS communication.
+2. Authentication for protected resources.
+3. Role-based authorization.
+4. Request validation.
+5. Rate limiting where appropriate.
+6. Secure token handling.
+7. Protection against unauthorized administrative operations.
+8. Appropriate CORS configuration.
+9. Secure error responses that do not expose sensitive internal information.
+
+---
+
+# 16. API Versioning
+
+The API will use URL-based versioning.
+
+Initial version:
+
+`/api/v1/`
+
+Breaking API changes should be introduced through a new version where necessary.
+
+Backward compatibility should be maintained where practical.
+
+---
+
+# 17. Future API Considerations
+
+Future API capabilities may include:
+
+- Live matatu location updates.
+- Community fare reporting.
+- User route feedback.
+- Traffic information.
+- Transport operator integrations.
+- Additional public transport modes.
+- Advanced route preferences.
+- Offline data synchronization.
+
+These capabilities are not required for the initial API implementation.
+
+---
+
+# 18. Conclusion
+
+The MatLink API will provide a structured interface between the mobile application and backend services.
+
+Its core responsibilities include location discovery, destination searches, matatu route planning, fare estimation, and journey management.
+
+The API design prioritizes consistency, security, clear resource boundaries, and future extensibility.
+
+The endpoints and payloads defined in this document are proposed contracts and will be refined during implementation.

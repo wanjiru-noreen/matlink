@@ -1,0 +1,387 @@
+# MatLink User Flows
+
+## 1. Introduction
+
+### 1.1 Purpose
+
+This document describes the main user journeys and interactions within MatLink. It explains how users move through the application to discover matatu stages, plan journeys, navigate routes, and receive travel guidance.
+
+### 1.2 Scope
+
+The document covers passenger interactions, common system responses, exceptional situations, and basic administrative workflows.
+
+---
+
+## 2. Passenger User Flows
+
+### 2.1 First-Time Application Launch
+
+**Goal:** Allow a new user to access MatLink and begin planning a journey.
+
+**Flow:**
+
+1. User opens MatLink.
+2. Application displays the welcome screen.
+3. User is introduced to MatLink's main purpose.
+4. User proceeds to the home screen.
+5. Application requests location permission when location access is needed.
+6. User grants or denies permission.
+7. Application displays the home screen.
+
+**Alternative flows:**
+
+- If permission is granted, MatLink attempts to detect the user's current location.
+- If permission is denied, the user can manually enter their starting location.
+- If location cannot be detected, the application displays an appropriate message and offers manual location entry.
+
+Account registration may be introduced as an optional feature. Core journey discovery should be designed to work without requiring an account unless a future product decision establishes otherwise.
+
+---
+
+### 2.2 Detecting Current Location
+
+**Goal:** Determine where the passenger is starting their journey.
+
+**Flow:**
+
+1. User opens the home screen.
+2. Application requests the device's current location.
+3. GPS provides the user's coordinates.
+4. Application identifies the approximate area or nearby recognised places.
+5. The current location is displayed on the map.
+6. User confirms or adjusts the starting location.
+
+**Alternative flows:**
+
+- If GPS is unavailable, the user can enter a location manually.
+- If the detected location is inaccurate, the user can move the map pin or search for another location.
+- If location permission is disabled, the application explains how to enable it or continue manually.
+
+---
+
+### 2.3 Manually Selecting a Starting Location
+
+**Goal:** Allow passengers to plan journeys without relying on automatic GPS detection.
+
+**Flow:**
+
+1. User selects the starting location field.
+2. Application displays a search field and map.
+3. User searches for a place or stage.
+4. Application displays matching results.
+5. User selects the correct location.
+6. Application sets it as the journey's starting point.
+7. User proceeds to destination selection.
+
+---
+
+### 2.4 Searching for a Destination
+
+**Goal:** Allow passengers to identify where they want to travel.
+
+**Flow:**
+
+1. User selects the destination field.
+2. Application displays a search interface.
+3. User enters a destination name.
+4. Application displays matching places.
+5. User selects the intended destination.
+6. Alternatively, the user selects a point directly on the map.
+7. Application confirms the destination.
+8. User proceeds to route planning.
+
+**Alternative flows:**
+
+- If no matching destination is found, the application asks the user to try another search.
+- If multiple places have similar names, the application displays additional location information to help distinguish them.
+
+---
+
+### 2.5 Discovering Nearby Matatu Stages
+
+**Goal:** Help passengers find nearby boarding stages.
+
+**Flow:**
+
+1. User opens the nearby stages section or map.
+2. Application obtains the user's current or manually selected location.
+3. Application searches for nearby recognised matatu stages.
+4. Nearby stages appear on the map and in a list.
+5. User selects a stage.
+6. Application displays available information, including:
+   - Stage name.
+   - Location.
+   - Matatu routes serving the stage.
+   - Available destination information.
+   - Estimated fares where data is available.
+7. User can request directions to the selected stage.
+
+**Alternative flows:**
+
+- If no nearby stages are found, the application suggests searching another area.
+- If stage information is incomplete, the application indicates that some details may be unavailable.
+
+---
+
+### 2.6 Planning a Journey
+
+**Goal:** Find a suitable matatu journey from the starting location to the destination.
+
+**Flow:**
+
+1. User selects a starting location.
+2. User selects a destination.
+3. User selects the option to find a route.
+4. Application analyses available stages, matatu routes, and walking connections.
+5. Application generates suitable journey options.
+6. Each result displays relevant information:
+   - Starting stage.
+   - Walking distance and estimated walking time.
+   - Matatu route or routes.
+   - Transfer stages, if required.
+   - Estimated fare.
+   - Estimated travel time.
+   - Final alighting stage.
+   - Walking directions to the destination.
+7. User reviews the available options.
+8. User selects a preferred journey.
+
+**Alternative flows:**
+
+- If no suitable route exists, the application informs the user.
+- If fare information is unavailable, the application clearly indicates this.
+- If multiple routes are available, the application presents them for comparison.
+
+---
+
+### 2.7 Following a Direct Journey
+
+**Goal:** Guide a passenger travelling using one matatu route.
+
+**Flow:**
+
+1. User selects a journey option.
+2. Application displays the journey overview.
+3. Application provides walking directions to the boarding stage.
+4. User follows the directions to the stage.
+5. User boards the recommended matatu.
+6. Application displays the expected alighting stage.
+7. Application tracks journey progress where location access and available route data permit.
+8. Application alerts the user when they are approaching the alighting stage, where supported.
+9. User alights.
+10. Application provides walking directions to the final destination.
+11. User reaches the destination.
+12. Journey is marked as completed.
+
+---
+
+### 2.8 Following a Multi-Matatu Journey
+
+**Goal:** Guide passengers through journeys requiring more than one matatu.
+
+**Flow:**
+
+1. User selects a journey containing multiple matatu legs.
+2. Application displays the complete journey overview.
+3. Application provides walking directions to the first boarding stage.
+4. User boards the first matatu.
+5. Application guides the user towards the correct alighting stage.
+6. User alights at the transfer stage.
+7. Application provides walking directions to the next boarding stage, if the stages differ.
+8. Application displays the next matatu route and estimated fare.
+9. User boards the next matatu.
+10. Application guides the user towards the final alighting stage.
+11. User alights.
+12. Application provides walking directions to the destination.
+13. Journey is marked as completed.
+
+**Important:** Each journey leg should have its own route, boarding stage, alighting stage, and fare estimate.
+
+---
+
+### 2.9 Viewing Journey Details
+
+**Goal:** Allow passengers to understand a selected route before travelling.
+
+**Flow:**
+
+1. User selects a route result.
+2. Application displays the full journey breakdown.
+3. User reviews:
+   - Walking segments.
+   - Boarding stages.
+   - Matatu routes.
+   - Transfer points.
+   - Alighting stages.
+   - Fare estimates.
+   - Travel and walking times.
+4. User can return to the route results or begin navigation.
+
+---
+
+### 2.10 Receiving Journey Notifications
+
+**Goal:** Keep passengers informed during their journeys.
+
+Possible notifications include:
+
+- Reminder to walk to the boarding stage.
+- Reminder to board the recommended matatu.
+- Alert when approaching an alighting stage.
+- Reminder to transfer to another matatu.
+- Notification when the journey is completed.
+
+Notifications should only be provided when the required location and journey information is available.
+
+---
+
+### 2.11 Saving a Place
+
+**Goal:** Allow users to keep frequently visited locations for future journeys.
+
+**Flow:**
+
+1. User opens a place's details.
+2. User selects the save option.
+3. Application requests a name or label if necessary.
+4. User confirms.
+5. Application saves the place.
+6. User can access it later from saved places.
+
+Users should also be able to rename or remove saved places.
+
+---
+
+## 3. Exceptional User Flows
+
+### 3.1 Location Permission Denied
+
+1. User denies location permission.
+2. Application explains that automatic location detection is unavailable.
+3. Application provides an option to enter a starting location manually.
+4. User continues planning their journey.
+
+### 3.2 GPS Signal Lost
+
+1. Application detects that location updates are unavailable.
+2. Application informs the user.
+3. The last known location may remain visible with an indication that it is no longer current.
+4. User can continue using available journey information or manually update their location.
+
+### 3.3 Internet Connection Lost
+
+1. Application detects network unavailability.
+2. Application informs the user that live information may not be available.
+3. Previously cached information may remain accessible.
+4. The application attempts to reconnect when connectivity returns.
+5. Data is refreshed where possible.
+
+### 3.4 No Route Found
+
+1. User requests a journey.
+2. Application searches available route information.
+3. No suitable journey is found.
+4. Application displays a message explaining that no route is currently available.
+5. User can adjust the starting location or destination.
+
+### 3.5 Fare Information Unavailable
+
+1. User views a journey.
+2. Application identifies that fare information is missing or outdated.
+3. Application displays an unavailable or unverified fare status.
+4. User is advised not to treat the displayed estimate as a confirmed fare.
+
+### 3.6 Route or Stage Information Changes
+
+1. Application receives updated route or stage information.
+2. Application checks whether the selected journey is affected.
+3. If affected, the user is informed.
+4. Application offers updated journey information where possible.
+
+---
+
+## 4. Administrator User Flows
+
+### 4.1 Administrator Login
+
+1. Administrator opens the administration interface.
+2. Administrator enters login credentials.
+3. Application validates the credentials.
+4. Administrator is redirected to the administration dashboard.
+
+### 4.2 Managing Matatu Stages
+
+1. Administrator opens stage management.
+2. Administrator views existing stages.
+3. Administrator creates or selects a stage.
+4. Administrator enters or updates stage information.
+5. Application validates the information.
+6. Administrator saves the changes.
+7. Updated information becomes available to the system according to its publication status.
+
+### 4.3 Managing Matatu Routes
+
+1. Administrator opens route management.
+2. Administrator creates or selects a route.
+3. Administrator enters route details.
+4. Administrator associates the route with its serving stages.
+5. Administrator defines the correct stage sequence.
+6. Application validates the route information.
+7. Administrator saves the route.
+
+### 4.4 Managing Fare Information
+
+1. Administrator opens fare management.
+2. Administrator selects a route or route segment.
+3. Administrator enters the fare information.
+4. Administrator provides the effective date where applicable.
+5. Application validates the information.
+6. Administrator saves the fare.
+7. Updated fare information becomes available to passengers.
+
+### 4.5 Reviewing User Submissions
+
+1. Administrator opens data submissions.
+2. Application displays submitted corrections or reports.
+3. Administrator selects a submission.
+4. Administrator reviews the submitted information.
+5. Administrator approves, rejects, or requests clarification.
+6. Application updates the submission status.
+7. Approved changes are reflected in the relevant system records.
+
+---
+
+## 5. Main User Journey Summary
+
+The primary MatLink passenger journey is:
+
+**Open MatLink → Set Starting Location → Select Destination → View Route Options → Choose Journey → Walk to Boarding Stage → Board Matatu → Follow Alighting Guidance → Transfer if Required → Walk to Destination → Complete Journey.**
+
+This flow represents MatLink's central purpose: helping passengers understand not only which matatu to take, but also where to board, where to alight, how to transfer, and how to reach their final destination.
+
+---
+
+## 6. Design Considerations
+
+The user experience should follow these principles:
+
+1. Keep journey instructions simple and easy to understand.
+2. Make boarding and alighting stages highly visible.
+3. Clearly distinguish walking segments from matatu journeys.
+4. Display fare estimates before the passenger begins travelling.
+5. Show transfer instructions clearly.
+6. Avoid overwhelming users with unnecessary information.
+7. Provide alternatives when location or network services fail.
+8. Clearly communicate when route or fare information is incomplete.
+9. Make the map and written directions work together.
+10. Keep the passenger informed throughout the journey.
+
+---
+
+## 7. Conclusion
+
+MatLink's user flows are designed around the complete passenger experience, from identifying a starting location to reaching a final destination.
+
+The application should reduce uncertainty by providing clear stage discovery, route planning, fare estimates, walking directions, transfer guidance, and alighting instructions.
+
+The most important experience is ensuring that a passenger who does not know the town or its matatu routes can still complete their journey confidently.

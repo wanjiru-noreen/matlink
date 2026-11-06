@@ -1,0 +1,737 @@
+# MatLink
+# Database Design Document
+
+**Document Version:** 1.0  
+**Project:** MatLink  
+**Database:** PostgreSQL with PostGIS  
+**Document Status:** Proposed Design
+
+---
+
+# 1. Introduction
+
+## 1.1 Purpose
+
+This document defines the proposed database structure for MatLink.
+
+It identifies the entities, attributes, relationships, constraints, and indexing strategies required to support the platform.
+
+The database will serve as the central storage system for user information, geographic locations, matatu transport networks, fare information, and passenger journeys.
+
+## 1.2 Database Objectives
+
+The database should:
+
+1. Store structured transport information.
+2. Represent matatu stages and routes accurately.
+3. Support routes containing multiple stages.
+4. Support route direction and transfer identification.
+5. Store fare information between stages.
+6. Support geographic searches.
+7. Store complete passenger journeys.
+8. Maintain data integrity.
+9. Support verification and updates of transport information.
+10. Scale as additional towns and transport networks are introduced.
+
+## 1.3 Database Technology
+
+The proposed database technologies are:
+
+- PostgreSQL: Relational database management.
+- PostGIS: Geographic data management and spatial queries.
+- UUID: Primary identifiers for major entities.
+- SQL migrations: Database schema versioning.
+
+---
+
+# 2. Database Architecture
+
+MatLink will use a relational database.
+
+Entities will be connected through primary keys and foreign keys to maintain referential integrity.
+
+Geographic information will be stored using PostGIS spatial data types.
+
+## 2.1 Entity Relationship Overview
+
+The primary relationships are:
+
+```text
+USERS
+  |
+  |--- SAVED_PLACES
+  |
+  |--- JOURNEYS
+           |
+           |--- JOURNEY_LEGS
+           |
+           |--- JOURNEY_EVENTS
+
+
+TOWNS
+  |
+  |--- PLACES
+  |
+  |--- STAGES
+  |
+  |--- MATATU_ROUTES
+
+
+MATATU_ROUTES
+  |
+  |--- ROUTE_STAGES
+  |         |
+  |         |--- STAGES
+  |
+  |--- FARES
+            |
+            |--- BOARDING STAGE
+            |
+            |--- ALIGHTING STAGE
+
+
+USERS
+  |
+  |--- DATA_SUBMISSIONS
+  |
+  |--- ADMINISTRATIVE RECORDS
+```
+
+The diagram represents conceptual relationships. The detailed foreign keys are defined below.
+
+---
+
+# 3. Database Entities
+
+## 3.1 Users
+
+**Table:** `users`
+
+Stores registered user information.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| full_name | VARCHAR | User's full name |
+| email | VARCHAR | Unique email address |
+| password_hash | TEXT | Hashed password, where applicable |
+| role | VARCHAR | User role |
+| is_active | BOOLEAN | Account status |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update timestamp |
+
+### Rules
+
+- Every user must have a unique identifier.
+- Email addresses must be unique when provided.
+- Passwords must never be stored as plaintext.
+- Roles may include passenger, administrator, and authorized data contributor.
+- Account deactivation must not automatically delete historical journey records.
+
+---
+
+## 3.2 Towns
+
+**Table:** `towns`
+
+Stores towns supported by MatLink.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| name | VARCHAR | Town name |
+| county | VARCHAR | County |
+| country | VARCHAR | Country |
+| boundary | GEOGRAPHY(MULTIPOLYGON, 4326) | Geographic boundary |
+| is_active | BOOLEAN | Availability status |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update timestamp |
+
+### Rules
+
+- A town can contain multiple stages, routes, and places.
+- Town names should be appropriately indexed.
+- Geographic boundaries may be added when available.
+
+---
+
+## 3.3 Places
+
+**Table:** `places`
+
+Stores searchable destinations and other geographic locations.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| town_id | UUID | Associated town |
+| name | VARCHAR | Place name |
+| category | VARCHAR | Place category |
+| description | TEXT | Additional information |
+| location | GEOGRAPHY(POINT, 4326) | Geographic coordinates |
+| is_active | BOOLEAN | Availability status |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update timestamp |
+
+### Possible Categories
+
+- Educational institutions.
+- Hospitals.
+- Shopping centres.
+- Residential areas.
+- Government offices.
+- Landmarks.
+- Commercial buildings.
+- Other points of interest.
+
+### Rules
+
+- A place may belong to a town.
+- Geographic coordinates are required for map-based navigation.
+- Place names should support destination searches.
+
+---
+
+## 3.4 Stages
+
+**Table:** `stages`
+
+Stores matatu boarding, transfer, and alighting stages.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| town_id | UUID | Associated town |
+| name | VARCHAR | Stage name |
+| description | TEXT | Additional details |
+| location | GEOGRAPHY(POINT, 4326) | Geographic coordinates |
+| verification_status | VARCHAR | Verification status |
+| operational_status | VARCHAR | Operational status |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update timestamp |
+
+### Verification Status
+
+- PENDING
+- VERIFIED
+- REJECTED
+
+### Operational Status
+
+- ACTIVE
+- INACTIVE
+- CLOSED
+
+### Rules
+
+- Every stage must belong to a town.
+- Every stage must have geographic coordinates.
+- A stage may serve multiple matatu routes.
+- Unverified stages must not be presented as verified information.
+- Inactive or closed stages must not be recommended for new journeys.
+
+---
+
+## 3.5 Matatu Routes
+
+**Table:** `matatu_routes`
+
+Stores individual matatu routes.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| town_id | UUID | Associated town |
+| name | VARCHAR | Route name |
+| route_code | VARCHAR | Unique route identifier |
+| origin_name | VARCHAR | Route origin |
+| destination_name | VARCHAR | Route destination |
+| direction | VARCHAR | Route direction |
+| description | TEXT | Additional details |
+| operational_status | VARCHAR | Route status |
+| verification_status | VARCHAR | Verification status |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update timestamp |
+
+### Rules
+
+- Every route must belong to a town.
+- Routes must have an identifiable direction.
+- A route may serve multiple stages.
+- Routes must contain an ordered sequence of stages.
+- Different directions of travel should be represented explicitly.
+
+A return journey may use a separate route record where its stage sequence or operational path differs.
+
+---
+
+## 3.6 Route Stages
+
+**Table:** `route_stages`
+
+Connects matatu routes to the stages they serve.
+
+This table is essential because one route serves multiple stages, and one stage may serve multiple routes.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| route_id | UUID | Associated route |
+| stage_id | UUID | Associated stage |
+| sequence_number | INTEGER | Position along route |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+
+### Rules
+
+- Every record must reference an existing route and stage.
+- Each route must have an ordered sequence of stages.
+- A stage should not appear more than once in the same route sequence unless the actual route structure requires it.
+- Sequence numbers must be unique within a route.
+- Route planning must respect the order of stages and route direction.
+
+### Example
+
+| Route | Stage | Sequence |
+|---|---|---|
+| Route A | Stage 1 | 1 |
+| Route A | Stage 2 | 2 |
+| Route A | Stage 3 | 3 |
+| Route A | Stage 4 | 4 |
+| Route A | Stage 5 | 5 |
+
+This structure allows the routing engine to determine whether a passenger can board at one stage and alight at another along the same route.
+
+---
+
+## 3.7 Fares
+
+**Table:** `fares`
+
+Stores estimated fares between boarding and alighting stages on a particular route.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| route_id | UUID | Associated route |
+| boarding_stage_id | UUID | Boarding stage |
+| alighting_stage_id | UUID | Alighting stage |
+| amount | NUMERIC(10,2) | Estimated fare |
+| currency | CHAR(3) | Currency code |
+| verification_status | VARCHAR | Verification status |
+| effective_from | TIMESTAMPTZ | Start of validity |
+| effective_until | TIMESTAMPTZ | End of validity |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update timestamp |
+
+### Rules
+
+- Every fare must belong to a route.
+- Boarding and alighting stages must belong to the associated route.
+- The boarding stage must occur before the alighting stage in the route direction.
+- Fare amounts cannot be negative.
+- The system should retain historical fare information.
+- Only applicable fare records should be used for current estimates.
+
+### Example
+
+| Route | Boarding Stage | Alighting Stage | Estimated Fare |
+|---|---|---|---|
+| Route A | Stage 1 | Stage 3 | KES 50 |
+| Route A | Stage 1 | Stage 5 | KES 80 |
+| Route A | Stage 2 | Stage 5 | KES 60 |
+
+These figures are illustrative, not actual transport fares.
+
+---
+
+## 3.8 Saved Places
+
+**Table:** `saved_places`
+
+Stores locations saved by registered users.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| user_id | UUID | Associated user |
+| place_id | UUID | Associated place, if applicable |
+| label | VARCHAR | User-defined name |
+| location | GEOGRAPHY(POINT, 4326) | Saved coordinates |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update timestamp |
+
+### Rules
+
+- Every saved place must belong to a user.
+- A saved location may reference an existing place or store independently selected coordinates.
+- Users may create, update, and delete their saved places.
+
+---
+
+## 3.9 Journeys
+
+**Table:** `journeys`
+
+Stores complete passenger journeys.
+
+A journey represents the entire trip from the passenger's starting location to their destination.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| user_id | UUID | Associated user, nullable for guest journeys |
+| origin | GEOGRAPHY(POINT, 4326) | Starting coordinates |
+| destination | GEOGRAPHY(POINT, 4326) | Destination coordinates |
+| origin_name | VARCHAR | Starting location name |
+| destination_name | VARCHAR | Destination name |
+| estimated_fare | NUMERIC(10,2) | Total estimated fare |
+| estimated_duration_minutes | INTEGER | Estimated total duration |
+| actual_duration_minutes | INTEGER | Actual duration, if available |
+| status | VARCHAR | Journey status |
+| started_at | TIMESTAMPTZ | Journey start time |
+| completed_at | TIMESTAMPTZ | Completion time |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update timestamp |
+
+### Journey Statuses
+
+- PLANNED
+- ACTIVE
+- COMPLETED
+- CANCELLED
+
+### Rules
+
+- A journey must have a starting location and destination.
+- A journey may contain multiple journey legs.
+- Guest journeys may have no associated user account.
+- Estimated journey information should be retained for the duration of the journey.
+- Completed journeys should retain their historical information.
+
+---
+
+## 3.10 Journey Legs
+
+**Table:** `journey_legs`
+
+Represents individual matatu trips within a complete journey.
+
+A journey may contain one or several transport legs.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| journey_id | UUID | Associated journey |
+| route_id | UUID | Matatu route |
+| boarding_stage_id | UUID | Boarding stage |
+| alighting_stage_id | UUID | Alighting stage |
+| sequence_number | INTEGER | Journey leg order |
+| estimated_fare | NUMERIC(10,2) | Estimated leg fare |
+| estimated_duration_minutes | INTEGER | Estimated leg duration |
+| status | VARCHAR | Leg status |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update timestamp |
+
+### Leg Statuses
+
+- PENDING
+- ACTIVE
+- COMPLETED
+- SKIPPED
+
+### Rules
+
+- Every journey leg must belong to a journey.
+- Every journey leg must reference a valid route.
+- Boarding and alighting stages must be served by that route.
+- Journey legs must follow the correct sequence.
+- The total estimated fare must account for the individual transport legs.
+- Walking segments between journey legs must also be represented in the journey plan.
+
+---
+
+## 3.11 Journey Events
+
+**Table:** `journey_events`
+
+Stores important events during an active journey.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| journey_id | UUID | Associated journey |
+| journey_leg_id | UUID | Associated leg, nullable |
+| event_type | VARCHAR | Event type |
+| description | TEXT | Event details |
+| occurred_at | TIMESTAMPTZ | Event timestamp |
+
+### Possible Event Types
+
+- JOURNEY_STARTED
+- BOARDING_STAGE_APPROACHED
+- TRANSFER_REQUIRED
+- ALIGHTING_STAGE_APPROACHED
+- LEG_COMPLETED
+- JOURNEY_COMPLETED
+- JOURNEY_CANCELLED
+
+### Rules
+
+- Every event must belong to a journey.
+- Events may optionally reference a particular journey leg.
+- Events should be recorded chronologically.
+- The event history should help reconstruct important journey progress.
+
+---
+
+## 3.12 Data Submissions
+
+**Table:** `data_submissions`
+
+Stores proposed transport information submitted for verification.
+
+| Column | Data Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| submitted_by | UUID | User who submitted the information |
+| submission_type | VARCHAR | Type of transport information |
+| entity_reference | UUID | Related entity, where applicable |
+| proposed_data | JSONB | Submitted information |
+| review_status | VARCHAR | Review status |
+| reviewed_by | UUID | Reviewing administrator |
+| reviewed_at | TIMESTAMPTZ | Review timestamp |
+| created_at | TIMESTAMPTZ | Submission timestamp |
+
+### Review Statuses
+
+- PENDING
+- APPROVED
+- REJECTED
+
+### Rules
+
+- Submissions must identify their submitter.
+- Administrative approval must be recorded.
+- Approved information must pass the appropriate validation process before updating operational transport records.
+- Rejected submissions should retain their review history.
+
+---
+
+# 4. Entity Relationships
+
+The following relationships define how the database entities connect.
+
+| Parent Entity | Child Entity | Relationship |
+|---|---|---|
+| Users | Saved Places | One-to-Many |
+| Users | Journeys | One-to-Many |
+| Users | Data Submissions | One-to-Many |
+| Towns | Places | One-to-Many |
+| Towns | Stages | One-to-Many |
+| Towns | Matatu Routes | One-to-Many |
+| Matatu Routes | Route Stages | One-to-Many |
+| Stages | Route Stages | One-to-Many |
+| Matatu Routes | Fares | One-to-Many |
+| Journeys | Journey Legs | One-to-Many |
+| Journeys | Journey Events | One-to-Many |
+| Matatu Routes | Journey Legs | One-to-Many |
+| Stages | Journey Legs | One-to-Many |
+
+The many-to-many relationship between stages and matatu routes is implemented through `route_stages`.
+
+---
+
+# 5. Geographic Data Design
+
+## 5.1 Geographic Data Types
+
+PostGIS will be used to store and query geographic information.
+
+The proposed geographic data types include:
+
+- `GEOGRAPHY(POINT, 4326)` for individual locations.
+- `GEOGRAPHY(MULTIPOLYGON, 4326)` for geographic boundaries.
+
+The coordinate reference system will use SRID 4326.
+
+## 5.2 Spatial Queries
+
+The database should support:
+
+- Finding nearby matatu stages.
+- Finding nearby places.
+- Calculating distances between coordinates.
+- Identifying stages within a selected geographic area.
+- Supporting geographic searches across towns.
+
+## 5.3 Spatial Indexing
+
+Spatial indexes should be created for geographic columns used in location searches.
+
+This will improve the performance of nearby-stage and nearby-place queries.
+
+---
+
+# 6. Data Integrity and Constraints
+
+The database must enforce appropriate integrity rules.
+
+## 6.1 Primary Keys
+
+Every major entity must have a unique primary key.
+
+UUIDs are proposed for primary identifiers.
+
+## 6.2 Foreign Keys
+
+Relationships must be enforced using foreign keys.
+
+For example:
+
+- Every stage must reference an existing town.
+- Every route must reference an existing town.
+- Every route-stage record must reference an existing route and stage.
+- Every journey leg must reference an existing journey and route.
+
+## 6.3 Uniqueness Constraints
+
+Appropriate uniqueness constraints should prevent:
+
+- Duplicate user email addresses.
+- Duplicate route codes within their intended scope.
+- Duplicate stage positions within a route.
+- Duplicate active fare records for the same route and stage pair during overlapping validity periods.
+
+## 6.4 Validation Constraints
+
+The database should enforce:
+
+- Non-negative fare amounts.
+- Valid coordinate values.
+- Valid journey statuses.
+- Valid route operational statuses.
+- Valid sequence numbers.
+- Valid fare validity periods.
+
+## 6.5 Deletion Rules
+
+Historical journey information should not disappear simply because a route or stage is no longer operational.
+
+Transport records should generally be deactivated rather than physically deleted when historical records depend on them.
+
+Foreign key deletion behaviour must be selected carefully for each relationship.
+
+---
+
+# 7. Indexing Strategy
+
+Indexes should be created for frequently queried columns.
+
+| Table | Column | Index Purpose |
+|---|---|---|
+| users | email | Authentication lookup |
+| towns | name | Town search |
+| places | name | Destination search |
+| places | location | Nearby place discovery |
+| stages | location | Nearby stage discovery |
+| stages | town_id | Town-based filtering |
+| matatu_routes | town_id | Route lookup |
+| matatu_routes | route_code | Route identification |
+| route_stages | route_id, sequence_number | Ordered route lookup |
+| route_stages | stage_id | Routes serving a stage |
+| fares | route_id | Route fare lookup |
+| fares | boarding_stage_id, alighting_stage_id | Fare lookup |
+| journeys | user_id | User journey history |
+| journey_legs | journey_id, sequence_number | Ordered journey retrieval |
+| journey_events | journey_id, occurred_at | Journey event history |
+
+Appropriate composite and spatial indexes should be used where query patterns justify them.
+
+---
+
+# 8. Data Lifecycle and Maintenance
+
+## 8.1 Transport Data Updates
+
+Transport information may change over time.
+
+The system should support updating:
+
+- Stage names and locations.
+- Route sequences.
+- Route operational status.
+- Fare estimates.
+- Verification information.
+
+## 8.2 Fare History
+
+Previous fare records should be retained when fares change.
+
+The `effective_from` and `effective_until` fields will help determine which fare records apply to a particular period.
+
+## 8.3 Verification
+
+Transport information should have a clear verification status.
+
+Administrators should be able to review proposed changes before they become verified operational data.
+
+## 8.4 Historical Records
+
+Journey records should preserve the relevant route, stage, and fare information used when the journey was planned.
+
+This helps prevent subsequent transport-data updates from changing historical journey information.
+
+## 8.5 Backups
+
+The production database should have a backup and recovery strategy.
+
+Backups should be tested periodically to ensure that data can be restored.
+
+---
+
+# 9. Database Security
+
+The database should implement the following security measures:
+
+1. Restrict direct database access.
+2. Use separate credentials for development and production.
+3. Apply least-privilege database permissions.
+4. Protect sensitive user information.
+5. Secure database connections.
+6. Store database credentials outside source code.
+7. Apply appropriate retention policies to personal information.
+8. Log relevant administrative changes.
+9. Protect backups from unauthorized access.
+
+---
+
+# 10. Future Database Considerations
+
+Future versions may introduce:
+
+- Matatu vehicle records.
+- Transport operator information.
+- SACCO management.
+- Community fare reports.
+- User route feedback.
+- Live vehicle location records.
+- Traffic information.
+- Journey analytics.
+- Multiple transport modes.
+- Advanced route performance statistics.
+
+These entities are not required for the initial database implementation.
+
+---
+
+# 11. Conclusion
+
+The MatLink database will use a relational structure supported by PostgreSQL and PostGIS.
+
+The core data model will connect towns, places, stages, matatu routes, route sequences, fares, and passenger journeys.
+
+The `route_stages` relationship will form an important foundation for route discovery and multi-matatu journey planning.
+
+The database design prioritizes geographic searches, data integrity, transport information verification, fare history, and future scalability.
+
+This document will guide the creation of the database schema, migrations, repositories, and backend data-access logic.
